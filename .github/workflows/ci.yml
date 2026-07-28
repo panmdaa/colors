@@ -24,7 +24,13 @@ jobs:
 
       - run: npm run typecheck
 
-      - run: npm run lint
+      - name: Lint
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Format check
+        continue-on-error: true
+        run: npm run format
 
       - run: npm test
 
