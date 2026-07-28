@@ -1,0 +1,153 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * Copyright 2026 Panmdaa
+ *
+ * Derived from Material Color Utilities.
+ * Modified and maintained by the Panmdaa project.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+// material_color_utilities is designed to have a consistent API across
+// platforms and modular components that can be moved around easily. Using a
+// class as a namespace facilitates this.
+//
+
+import { yFromLstar, lstarFromY } from './color';
+import { clampDouble } from './math';
+
+/**
+ * Utility methods for calculating contrast given two colors, or calculating a
+ * color given one color and a contrast ratio.
+ *
+ * Contrast ratio is calculated using XYZ's Y. When linearized to match human
+ * perception, Y becomes HCT's tone and L*a*b*'s' L*. Informally, this is the
+ * lightness of a color.
+ *
+ * Methods refer to tone, T in the the HCT color space.
+ * Tone is equivalent to L* in the L*a*b* color space, or L in the LCH color
+ * space.
+ */
+export const Contrast = {
+	/**
+	 * Returns a contrast ratio, which ranges from 1 to 21.
+	 *
+	 * @param toneA Tone between 0 and 100. Values outside will be clamped.
+	 * @param toneB Tone between 0 and 100. Values outside will be clamped.
+	 */
+	ratioOfTones(toneA: number, toneB: number): number {
+		toneA = clampDouble(0.0, 100.0, toneA);
+		toneB = clampDouble(0.0, 100.0, toneB);
+		return Contrast.ratioOfYs(yFromLstar(toneA), yFromLstar(toneB));
+	},
+
+	ratioOfYs(y1: number, y2: number): number {
+		const lighter = y1 > y2 ? y1 : y2;
+		const darker = lighter === y2 ? y1 : y2;
+		return (lighter + 5.0) / (darker + 5.0);
+	},
+
+	/**
+	 * Returns a tone >= tone parameter that ensures ratio parameter.
+	 * Return value is between 0 and 100.
+	 * Returns -1 if ratio cannot be achieved with tone parameter.
+	 *
+	 * @param tone Tone return value must contrast with.
+	 * Range is 0 to 100. Invalid values will result in -1 being returned.
+	 * @param ratio Contrast ratio of return value and tone.
+	 * Range is 1 to 21, invalid values have undefined behavior.
+	 */
+	lighter(tone: number, ratio: number): number {
+		if (tone < 0.0 || tone > 100.0) {
+			return -1.0;
+		}
+
+		const darkY = yFromLstar(tone);
+		const lightY = ratio * (darkY + 5.0) - 5.0;
+		const realContrast = Contrast.ratioOfYs(lightY, darkY);
+		const delta = Math.abs(realContrast - ratio);
+		if (realContrast < ratio && delta > 0.04) {
+			return -1;
+		}
+
+		// Ensure gamut mapping, which requires a 'range' on tone, will still result
+		// the correct ratio by darkening slightly.
+		const returnValue = lstarFromY(lightY) + 0.4;
+		if (returnValue < 0 || returnValue > 100) {
+			return -1;
+		}
+		return returnValue;
+	},
+
+	/**
+	 * Returns a tone <= tone parameter that ensures ratio parameter.
+	 * Return value is between 0 and 100.
+	 * Returns -1 if ratio cannot be achieved with tone parameter.
+	 *
+	 * @param tone Tone return value must contrast with.
+	 * Range is 0 to 100. Invalid values will result in -1 being returned.
+	 * @param ratio Contrast ratio of return value and tone.
+	 * Range is 1 to 21, invalid values have undefined behavior.
+	 */
+	darker(tone: number, ratio: number): number {
+		if (tone < 0.0 || tone > 100.0) {
+			return -1.0;
+		}
+
+		const lightY = yFromLstar(tone);
+		const darkY = (lightY + 5.0) / ratio - 5.0;
+		const realContrast = Contrast.ratioOfYs(lightY, darkY);
+
+		const delta = Math.abs(realContrast - ratio);
+		if (realContrast < ratio && delta > 0.04) {
+			return -1;
+		}
+
+		// Ensure gamut mapping, which requires a 'range' on tone, will still result
+		// the correct ratio by darkening slightly.
+		const returnValue = lstarFromY(darkY) - 0.4;
+		if (returnValue < 0 || returnValue > 100) {
+			return -1;
+		}
+		return returnValue;
+	},
+
+	/**
+	 * Returns a tone >= tone parameter that ensures ratio parameter.
+	 * Return value is between 0 and 100.
+	 * Returns 100 if ratio cannot be achieved with tone parameter.
+	 *
+	 * This method is unsafe because the returned value is guaranteed to be in
+	 * bounds for tone, i.e. between 0 and 100. However, that value may not reach
+	 * the ratio with tone. For example, there is no color lighter than T100.
+	 *
+	 * @param tone Tone return value must contrast with.
+	 * Range is 0 to 100. Invalid values will result in 100 being returned.
+	 * @param ratio Desired contrast ratio of return value and tone parameter.
+	 * Range is 1 to 21, invalid values have undefined behavior.
+	 */
+	lighterUnsafe(tone: number, ratio: number): number {
+		const lighterSafe = Contrast.lighter(tone, ratio);
+		return lighterSafe < 0.0 ? 100.0 : lighterSafe;
+	},
+
+	/**
+	 * Returns a tone >= tone parameter that ensures ratio parameter.
+	 * Return value is between 0 and 100.
+	 * Returns 100 if ratio cannot be achieved with tone parameter.
+	 *
+	 * This method is unsafe because the returned value is guaranteed to be in
+	 * bounds for tone, i.e. between 0 and 100. However, that value may not reach
+	 * the [ratio with [tone]. For example, there is no color darker than T0.
+	 *
+	 * @param tone Tone return value must contrast with.
+	 * Range is 0 to 100. Invalid values will result in 0 being returned.
+	 * @param ratio Desired contrast ratio of return value and tone parameter.
+	 * Range is 1 to 21, invalid values have undefined behavior.
+	 */
+	darkerUnsafe(tone: number, ratio: number): number {
+		const darkerSafe = Contrast.darker(tone, ratio);
+		return darkerSafe < 0.0 ? 0.0 : darkerSafe;
+	}
+};

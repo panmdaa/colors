@@ -1,0 +1,86 @@
+{
+	"name": "@panmdaaa/colors",
+	"private": false,
+	"version": "0.1.0",
+	"description": "HCT color space, Material Design 3 dynamic themes, WCAG contrast utilities — zero dependencies",
+	"license": "Apache-2.0",
+	"author": {
+		"name": "Panmdaa",
+		"email": "is.kkokotero@gmail.com",
+		"url": "https://github.com/panmdaa"
+	},
+	"keywords": [
+		"panmdaaa",
+		"color",
+		"css-color",
+		"wcag",
+		"contrast",
+		"accessibility",
+		"a11y",
+		"typescript",
+		"material-design",
+		"material-you",
+		"material-3",
+		"dynamic-color",
+		"hct",
+		"cam16",
+		"color-space",
+		"color-scheme",
+		"palette",
+		"theme",
+		"design-tokens",
+		"css-custom-properties"
+	],
+	"type": "module",
+	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	},
+	"scripts": {
+		"prepare": "tsup",
+		"build": "tsup && tsc -p tsconfig.build.json",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"typecheck": "tsc --noEmit",
+		"lint": "biome lint .",
+		"format": "biome format --write .",
+		"bench": "vitest bench"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/panmdaa/colors.git"
+	},
+	"homepage": "https://github.com/panmdaa/colors#readme",
+	"bugs": {
+		"url": "https://github.com/panmdaa/colors/issues"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"types": "./dist/index.d.ts",
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"misc",
+		"LICENSE",
+		"README.md"
+	],
+	"devDependencies": {
+		"@material/material-color-utilities": "^0.4.0",
+		"@types/node": "^22.15.0",
+		"chroma-js": "^3.2.0",
+		"culori": "^4.0.2",
+		"tinycolor2": "^1.6.0",
+		"tsup": "^8.4.0",
+		"tsx": "^4.19.0",
+		"typescript": "^7.0.2",
+		"vitest": "^3.2.7"
+	}
+}
