@@ -154,6 +154,36 @@ export function onColor(bg: ColorValue, ratio = 4.5): ColorValue {
 	return fromHct(c.hue, c.chroma, fgTone);
 }
 
+export function underColor(fg: ColorValue, ratio = 4.5): ColorValue {
+	return onColor(fg, ratio);
+}
+
+export function mix(...colors: [ColorValue, ...ColorValue[]]): ColorValue {
+	if (colors.length === 1) return colors[0];
+
+	const hcts = colors.map((c) => hct(c));
+	const n = hcts.length;
+
+	let sinSum = 0;
+	let cosSum = 0;
+	let chromaSum = 0;
+	let toneSum = 0;
+
+	for (const c of hcts) {
+		const rad = (c.hue * Math.PI) / 180;
+		sinSum += Math.sin(rad);
+		cosSum += Math.cos(rad);
+		chromaSum += c.chroma;
+		toneSum += c.tone;
+	}
+
+	const avgHue = ((Math.atan2(sinSum / n, cosSum / n) * 180) / Math.PI + 360) % 360;
+	const avgChroma = Math.max(0, chromaSum / n);
+	const avgTone = Math.max(0, Math.min(100, toneSum / n));
+
+	return fromHct(avgHue, avgChroma, avgTone);
+}
+
 export type ExtraPalette<T extends Record<string, ColorValue | CustomTokenOptions>> = {
 	[K in keyof T & string]: ColorValue;
 } & {

@@ -44,6 +44,14 @@ theme.light.background; // "#fcfcff"
 onColor("#000000");       // tone ~49, 4.5:1 contrast
 onColor("#000000", 7);    // tone ~65, 7.0:1 (AAA)
 
+// Find a contrasting background for any foreground
+underColor("#ffffff");    // tone ~49, 4.5:1 contrast
+underColor("#ffffff", 7); // tone ~65, 7.0:1 (AAA)
+
+// Blend multiple colors together in HCT space
+mix("#ff0000", "#0000ff");                    // purple midpoint
+mix("#ff0000", "#00ff00", "#0000ff");          // three-way blend
+
 // Interpolate between two colors in HCT space
 gradient("#ff0000", "#0000ff", 5);  // [red, ..., ..., ..., blue]
 ```
@@ -254,6 +262,10 @@ rotateHue("#744c9d", 90);   // +90 hue
 // Batch edit
 edit("#744c9d", { hue: 200, chroma: 40, tone: 70 });
 
+// Foreground / background contrast pairing
+onColor("#000000");       // foreground for dark background
+underColor("#ffffff");    // background for light foreground
+
 // Get a specific tone
 tone("#744c9d", 90);  // same hue/chroma, tone 90
 
@@ -261,6 +273,26 @@ tone("#744c9d", 90);  // same hue/chroma, tone 90
 const ts = tones("#744c9d");
 ts[50]; // tone 50 at source color's hue/chroma
 ```
+
+## Color blending
+
+```ts
+import { mix } from "@panmdaa/colors";
+
+// Blend two colors — perceptual midpoint in HCT space
+mix("#ff0000", "#0000ff");  // hue ~283 (purple)
+
+// Blend any number of colors
+mix("#ff0000", "#00ff00", "#0000ff");  // three-way blend
+
+// All inputs weighted equally, hue is circular-averaged
+mix("#ff0000", "#ff0000", "#0000ff");
+// ≈ mix("#ff0000", "#0000ff") with extra red weight
+```
+
+The `mix` function operates in HCT space — hue is circular-averaged (handles the
+0°/360° wrap), chroma and tone are arithmetically averaged. The result is
+perceptually uniform, unlike naive RGB blending.
 
 ## Color correction
 
@@ -308,6 +340,8 @@ const theme = palette(seed, { variant: "expressive" });
 |----------|-------------|
 | `palette(color, options?)` | Generate light + dark theme (variant, extraColors, gradients) |
 | `onColor(bg, ratio?)` | Foreground with ≥4.5:1 contrast at same hue/chroma |
+| `underColor(fg, ratio?)` | Background with ≥4.5:1 contrast (inverse of `onColor`) |
+| `mix(...colors)` | Blend N colors together in HCT space |
 | `gradient(from, to, count)` | HCT-interpolated steps between two colors |
 | `generateCSS(theme, options?)` | CSS custom properties string |
 | `generateCSSSheet(theme, options?)` | Full stylesheet with light/dark blocks |

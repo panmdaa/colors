@@ -1,6 +1,6 @@
 import { describe, it } from "vitest";
 import assert from "node:assert/strict";
-import { onColor, gradient, palette } from "../../src/color";
+import { onColor, underColor, mix, gradient, palette } from "../../src/color";
 import { generateCSSSheet } from "../../src/css-sheet";
 import { report } from "../../src/report";
 import { Contrast } from "../../src/utils";
@@ -30,6 +30,49 @@ describe("onColor", () => {
 		const fg = onColor(bg);
 		const ratio = Contrast.ratioOfTones(getTone(bg), getTone(fg));
 		assert.ok(ratio >= 4.5, `contrast ${ratio}:1`);
+	});
+});
+
+describe("underColor", () => {
+	it("dark fg gets light background", () => {
+		const bg = underColor("#000000");
+		const ratio = Contrast.ratioOfTones(getTone(bg), getTone("#000000"));
+		assert.ok(ratio >= 4.5, `contrast ${ratio}:1`);
+	});
+
+	it("light fg gets dark background", () => {
+		const bg = underColor("#ffffff");
+		const ratio = Contrast.ratioOfTones(getTone("#ffffff"), getTone(bg));
+		assert.ok(ratio >= 4.5, `contrast ${ratio}:1`);
+	});
+
+	it("customizes contrast ratio", () => {
+		const bg = underColor("#000000", 7);
+		const ratio = Contrast.ratioOfTones(getTone(bg), getTone("#000000"));
+		assert.ok(ratio >= 7.0, `contrast ${ratio}:1`);
+	});
+});
+
+describe("mix", () => {
+	it("single color returns itself", () => {
+		assert.equal(mix("#ff0000"), "#ff0000");
+	});
+
+	it("two colors average in HCT", () => {
+		const result = mix("#ff0000", "#0000ff");
+		assert.ok(result.startsWith("#"));
+		assert.equal(result.length, 7);
+	});
+
+	it("three colors blend without error", () => {
+		const result = mix("#ff0000", "#00ff00", "#0000ff");
+		assert.ok(result.startsWith("#"));
+		assert.equal(result.length, 7);
+	});
+
+	it("identical colors return same color", () => {
+		const result = mix("#744c9d", "#744c9d", "#744c9d");
+		assert.equal(result, "#744c9d");
 	});
 });
 
