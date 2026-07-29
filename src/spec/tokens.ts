@@ -99,9 +99,8 @@ export class ColorTokens {
 			tone: (s) => {
 				if (s.variant === Variant.CMF) {
 					return s.isDark ? 4 : 98;
-				} else {
-					return 0;
 				}
+				return s.isDark ? 6 : 98;
 			},
 			isBackground: true
 		});
@@ -114,16 +113,14 @@ export class ColorTokens {
 			tone: (s) => {
 				if (s.variant === Variant.CMF) {
 					return s.isDark ? 4 : 87;
-				} else {
-					return 0;
 				}
+				return s.isDark ? 4 : 87;
 			},
 			chromaMultiplier: (s) => {
 				if (s.variant === Variant.CMF) {
 					return s.isDark ? 1 : 1.7;
-				} else {
-					return 0;
 				}
+				return 0;
 			},
 			isBackground: true
 		});
@@ -136,16 +133,14 @@ export class ColorTokens {
 			tone: (s) => {
 				if (s.variant === Variant.CMF) {
 					return s.isDark ? 18 : 98;
-				} else {
-					return 0;
 				}
+				return s.isDark ? 24 : 98;
 			},
 			chromaMultiplier: (s) => {
 				if (s.variant === Variant.CMF) {
 					return s.isDark ? 1.7 : 1;
-				} else {
-					return 0;
 				}
+				return 0;
 			},
 			isBackground: true
 		});
@@ -158,9 +153,8 @@ export class ColorTokens {
 			tone: (s) => {
 				if (s.variant === Variant.CMF) {
 					return s.isDark ? 0 : 100;
-				} else {
-					return 0;
 				}
+				return s.isDark ? 0 : 100;
 			},
 			isBackground: true
 		});
@@ -173,16 +167,14 @@ export class ColorTokens {
 			tone: (s) => {
 				if (s.variant === Variant.CMF) {
 					return s.isDark ? 6 : 96;
-				} else {
-					return 0;
 				}
+				return s.isDark ? 10 : 96;
 			},
 			chromaMultiplier: (s) => {
 				if (s.variant === Variant.CMF) {
 					return 1.25;
-				} else {
-					return 0;
 				}
+				return 0;
 			},
 			isBackground: true
 		});
@@ -195,16 +187,14 @@ export class ColorTokens {
 			tone: (s) => {
 				if (s.variant === Variant.CMF) {
 					return s.isDark ? 9 : 94;
-				} else {
-					return 0;
 				}
+				return s.isDark ? 12 : 94;
 			},
 			chromaMultiplier: (s) => {
 				if (s.variant === Variant.CMF) {
 					return 1.4;
-				} else {
-					return 0;
 				}
+				return 0;
 			},
 			isBackground: true
 		});
@@ -217,16 +207,14 @@ export class ColorTokens {
 			tone: (s) => {
 				if (s.variant === Variant.CMF) {
 					return s.isDark ? 12 : 92;
-				} else {
-					return 0;
 				}
+				return s.isDark ? 17 : 92;
 			},
 			chromaMultiplier: (s) => {
 				if (s.variant === Variant.CMF) {
 					return 1.5;
-				} else {
-					return 0;
 				}
+				return 0;
 			},
 			isBackground: true
 		});
@@ -239,16 +227,14 @@ export class ColorTokens {
 			tone: (s) => {
 				if (s.variant === Variant.CMF) {
 					return s.isDark ? 15 : 90;
-				} else {
-					return 0;
 				}
+				return s.isDark ? 22 : 90;
 			},
 			chromaMultiplier: (s) => {
 				if (s.variant === Variant.CMF) {
 					return 1.7;
-				} else {
-					return 0;
 				}
+				return 0;
 			},
 			isBackground: true
 		});

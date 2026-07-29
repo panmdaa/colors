@@ -164,16 +164,17 @@ export function palette<
 	T extends Record<string, ColorValue | CustomTokenOptions> = Record<string, never>,
 >(
 	color: ColorValue,
-	options?: { variant?: Variant; extraColors?: T },
+	options?: { variant?: Variant; contrastLevel?: number; extraColors?: T },
 ): Theme & {
 	light: Palette & ExtraPalette<T> & Record<string, ColorValue>;
 	dark: Palette & ExtraPalette<T> & Record<string, ColorValue>;
 } {
 	const variant = options?.variant ?? "expressive";
+	const contrastLevel = options?.contrastLevel ?? 0;
 	const source = Hct.fromInt(toNumber(color));
 	const internalVariant = toInternalVariant(variant);
-	const light = generateColorPalette(source, internalVariant, false);
-	const dark = generateColorPalette(source, internalVariant, true);
+	const light = generateColorPalette(source, internalVariant, false, contrastLevel);
+	const dark = generateColorPalette(source, internalVariant, true, contrastLevel);
 
 	if (options?.extraColors) {
 		const extra = resolveCustomTokens(light, dark, color, options.extraColors);
@@ -213,12 +214,13 @@ function generateColorPalette(
 	source: Hct,
 	variant: InternalVariant,
 	dark: boolean,
+	contrastLevel: number,
 ): Palette {
 	const scheme = new DynamicScheme({
 		variant,
 		sourceColorHct: source,
 		isDark: dark,
-		contrastLevel: source.tone / 100,
+		contrastLevel,
 	});
 
 	return {

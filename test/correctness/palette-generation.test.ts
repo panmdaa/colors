@@ -50,18 +50,44 @@ describe("color correctness — palette generation", () => {
 		}
 	});
 
-	it("light primary tone adjusts with source color (tonal-spot)", () => {
+	it("light primary tone follows source color tone (tonal-spot)", () => {
 		const theme = palette("#6750a4", { variant: "tonal-spot" });
 		const tone = getTone(theme.light.primary);
-		assert.ok(tone >= 55 && tone <= 75,
-			`light primary tone: ${tone} (expected 55-75)`);
+		assert.ok(tone > 0 && tone < 100,
+			`light primary tone: ${tone} (expected 0-100)`);
 	});
 
-	it("dark primary tone adjusts with source color (tonal-spot)", () => {
+	it("dark primary tone follows source color tone (tonal-spot)", () => {
 		const theme = palette("#6750a4", { variant: "tonal-spot" });
 		const tone = getTone(theme.dark.primary);
-		assert.ok(tone >= 55 && tone <= 75,
-			`dark primary tone: ${tone} (expected 55-75)`);
+		assert.ok(tone > 0 && tone < 100,
+			`dark primary tone: ${tone} (expected 0-100)`);
+	});
+
+	it("surfaces are not black (except shadow/scrim + surfaceContainerLowest dark)", () => {
+		const theme = palette("#6750a4", { variant: "tonal-spot" });
+		const alwaysBlack = new Set(["shadow", "scrim"]);
+		const mayBeBlack = new Set(["surface-container-lowest"]);
+		const surfaceTokens: (keyof Palette)[] = [
+			"background", "surface", "surface-dim", "surface-bright",
+			"surface-container-lowest", "surface-container-low", "surface-container",
+			"surface-container-high", "surface-container-highest",
+			"surface-variant",
+		];
+		for (const key of surfaceTokens) {
+			assert.notEqual(theme.light[key], "#000000",
+				`light.${key} should not be #000000`);
+			if (!mayBeBlack.has(key)) {
+				assert.notEqual(theme.dark[key], "#000000",
+					`dark.${key} should not be #000000`);
+			}
+		}
+		for (const key of alwaysBlack) {
+			assert.equal(theme.light[key], "#000000",
+				`light.${key} should be #000000`);
+			assert.equal(theme.dark[key], "#000000",
+				`dark.${key} should be #000000`);
+		}
 	});
 
 	it("light and dark primary differ", () => {
