@@ -130,6 +130,49 @@ describe("gradient", () => {
 	});
 });
 
+describe("extraColors mix", () => {
+	it("mixes hex colors", () => {
+		const theme = palette("#6750a4", {
+			extraColors: { blended: { mix: ["#ff0000", "#0000ff"] } },
+		});
+		assert.ok(theme.light.blended.startsWith("#"));
+		assert.ok(theme.light["on-blended"]);
+	});
+
+	it("mixes palette key references", () => {
+		const theme = palette("#6750a4", {
+			extraColors: { brand: { mix: ["primary", "secondary"] } },
+		});
+		assert.ok(theme.light.brand.startsWith("#"));
+		assert.notEqual(theme.light.brand, theme.dark.brand);
+		assert.ok(theme.light["on-brand"]);
+	});
+
+	it("mixes hex + palette key", () => {
+		const theme = palette("#6750a4", {
+			extraColors: { accent: { mix: ["#ff0000", "primary", "tertiary"] } },
+		});
+		assert.ok(theme.light.accent.startsWith("#"));
+		assert.ok(theme.light["on-accent"]);
+	});
+
+	it("single-item mix returns the color itself", () => {
+		const theme = palette("#6750a4", {
+			extraColors: { exact: { mix: ["#ff6600"] } },
+		});
+		assert.equal(theme.light.exact, "#ff6600");
+		assert.equal(theme.dark.exact, "#ff6600");
+	});
+
+	it("generates distinct on-* token", () => {
+		const theme = palette("#6750a4", {
+			extraColors: { brand: { mix: ["#000000", "#ffffff"] } },
+		});
+		assert.ok(theme.light["on-brand"]);
+		assert.notEqual(theme.light["on-brand"], theme.light.brand);
+	});
+});
+
 describe("generateCSSSheet", () => {
 	it("generates light and dark blocks", () => {
 		const theme = palette("#6750a4");

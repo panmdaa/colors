@@ -105,6 +105,7 @@ export interface CustomTokenOptions {
 	harmonize?: ColorValue;
 	random?: boolean;
 	gradient?: GradientOptions;
+	mix?: (ColorValue | keyof Palette)[];
 }
 
 export interface PaletteOptions {

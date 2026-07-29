@@ -31,6 +31,47 @@ function generateOn(base: ColorValue): ColorValue {
 	return hexFromArgb(c.toInt()) as ColorValue;
 }
 
+function resolveMix(
+	colors: (ColorValue | keyof Palette)[],
+	modePalette: Palette,
+): ColorValue {
+	if (colors.length === 0) throw new Error("mix requires at least one color");
+	if (colors.length === 1) {
+		const c = colors[0];
+		return typeof c === "string" && c.startsWith("#")
+			? (c as ColorValue)
+			: (modePalette[c as keyof Palette] as ColorValue);
+	}
+
+	const hcts = colors.map((c) => {
+		const hex =
+			typeof c === "string" && c.startsWith("#")
+				? (c as ColorValue)
+				: (modePalette[c as keyof Palette] as ColorValue);
+		return Hct.fromInt(argbFromHex(hex));
+	});
+	const n = hcts.length;
+
+	let sinSum = 0;
+	let cosSum = 0;
+	let chromaSum = 0;
+	let toneSum = 0;
+
+	for (const h of hcts) {
+		const rad = (h.hue * Math.PI) / 180;
+		sinSum += Math.sin(rad);
+		cosSum += Math.cos(rad);
+		chromaSum += h.chroma;
+		toneSum += h.tone;
+	}
+
+	const avgHue = ((Math.atan2(sinSum / n, cosSum / n) * 180) / Math.PI + 360) % 360;
+	const avgChroma = Math.max(0, chromaSum / n);
+	const avgTone = Math.max(0, Math.min(100, toneSum / n));
+
+	return hexFromArgb(Hct.from(avgHue, avgChroma, avgTone).toInt()) as ColorValue;
+}
+
 function resolveOne(
 	config: ColorValue | CustomTokenOptions,
 	modePalette: Palette,
@@ -63,7 +104,11 @@ function resolveOne(
 		return hexFromArgb(Hct.from(hue, chroma, tone).toInt()) as ColorValue;
 	}
 
-	throw new Error("Invalid token config: provide 'from', 'harmonize', or 'random'");
+	if (config.mix) {
+		return resolveMix(config.mix, modePalette);
+	}
+
+	throw new Error("Invalid token config: provide 'from', 'harmonize', 'random', or 'mix'");
 }
 
 export function resolveCustomTokens(

@@ -129,6 +129,8 @@ const theme = palette("#6750a4", {
     mutedBold: { from: "primary", adjust: { tone: -10 } },  // adjusted
     accent: { harmonize: "#ff0000" },        // harmonized with source
     random: { random: true },                // randomized near source
+    duo: { mix: ["primary", "secondary"] },  // blend of palette keys
+    sunset: { mix: ["#ff0000", "#ff8800"] }, // blend of colors
   },
 });
 
@@ -136,12 +138,14 @@ theme.light.brand;            // "#ff6600"
 theme.light["on-brand"];      // "#ffffff" — auto-generated foreground
 theme.light.muted;            // matches primary
 theme.light.mutedBold;        // primary, tone-10
+theme.light.duo;              // HCT midpoint of primary + secondary
+theme.light.sunset;           // HCT midpoint of red + orange
 ```
 
 Key behaviour:
 - Names normalize to **kebab-case**: `theme.light["my-color"]`
 - Every non-`on-*` token gets an auto-generated `on-{name}` with ≥4.5:1 contrast
-- `from`-based tokens resolve **per-mode** (different in light/dark)
+- `from`-based tokens (including `mix` with palette keys) resolve **per-mode** (different in light/dark)
 - `harmonize`, `random`, and direct hex values are **shared** across modes
 
 ## Gradients
