@@ -1,5 +1,5 @@
 {
-	"name": "@panmdaaa/colors",
+	"name": "@panmdaa/colors",
 	"private": false,
 	"version": "0.1.0",
 	"description": "HCT color space, Material Design 3 dynamic themes, WCAG contrast utilities — zero dependencies",
@@ -10,7 +10,7 @@
 		"url": "https://github.com/panmdaa"
 	},
 	"keywords": [
-		"panmdaaa",
+		"panmdaa",
 		"color",
 		"css-color",
 		"wcag",
