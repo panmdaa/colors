@@ -41,7 +41,7 @@
 		"provenance": true
 	},
 	"scripts": {
-		"prepare": "tsup",
+		"prepare": "tsup && tsc -p tsconfig.build.json",
 		"build": "tsup && tsc -p tsconfig.build.json",
 		"test": "vitest run",
 		"test:watch": "vitest",
