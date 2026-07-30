@@ -10,6 +10,7 @@
  */
 
 export * from './blend';
+export * from './color-blindness';
 export * from './dislike-analyzer';
 export * from './image';
 export * from './score';

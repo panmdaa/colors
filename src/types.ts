@@ -112,3 +112,58 @@ export interface PaletteOptions {
 	variant?: Variant;
 	extraColors?: Record<string, ColorValue | CustomTokenOptions>;
 }
+
+export interface ContrastScore {
+	ratio: number;
+	score: number;
+	smallText: number;
+	largeText: number;
+}
+
+export interface ContrastScoreCVD extends ContrastScore {
+	simulations: Record<ColorVisionDeficiency, ContrastScore>;
+}
+
+export type ColorVisionDeficiency = "protanopia" | "deuteranopia" | "tritanopia";
+
+export type CVDSeverity = "full" | "mild";
+
+export interface PaletteCheckerSimulation {
+	base: ColorValue;
+	on: ColorValue;
+	score: ContrastScore;
+	AA: boolean;
+	AALarge: boolean;
+	AAA: boolean;
+}
+
+export interface PaletteCheckerPair {
+	role: string;
+	onRole: string;
+	base: ColorValue;
+	on: ColorValue;
+	score: ContrastScore;
+	AA: boolean;
+	AALarge: boolean;
+	AAA: boolean;
+	simulations?: Record<ColorVisionDeficiency, PaletteCheckerSimulation>;
+}
+
+export interface PaletteModeSummary {
+	total: number;
+	passingAA: number;
+	passingAALarge: number;
+	passingAAA: number;
+}
+
+export interface PaletteCheckerMode {
+	pairs: PaletteCheckerPair[];
+	summary: PaletteModeSummary;
+}
+
+export interface PaletteCheckerResult {
+	color: ColorValue;
+	light: PaletteCheckerMode;
+	dark: PaletteCheckerMode;
+	summary: PaletteModeSummary;
+}
