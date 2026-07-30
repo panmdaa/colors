@@ -21,9 +21,9 @@
 
 # @panmdaa/colors
 
-HCT color space, Material Design color utilities, and accessible theme generation — zero dependencies.
+Generate perceptually balanced design system themes from a single seed color — zero dependencies.
 
-**`@panmdaa/colors`** is a TypeScript library for working with color in the HCT (Hue-Chroma-Tone) color space, generating Material Design 3 color schemes, and ensuring WCAG-compliant contrast ratios.
+**`@panmdaa/colors`** is a TypeScript library for color science and accessible design system generation. Built on the HCT (Hue-Chroma-Tone) color space, it creates complete light and dark palettes with guaranteed WCAG-compliant contrast from any seed color.
 
 ```
 npm install @panmdaa/colors
@@ -32,33 +32,29 @@ npm install @panmdaa/colors
 ## Quick look
 
 ```ts
-import { palette, onColor, gradient } from "@panmdaa/colors";
+import { palette, contrastChecker, simulateCVD } from "@panmdaa/colors";
 
-// Generate a full Material 3 theme from a seed color
+// Generate a full design system theme from a seed color
 const theme = palette("#744c9d", { variant: "expressive" });
 theme.light.primary;    // "#b091ce"
 theme.dark.primary;     // "#dcb8ff"
 theme.light.background; // "#fcfcff"
 
-// Find a contrasting foreground for any background
-onColor("#000000");       // tone ~49, 4.5:1 contrast
-onColor("#000000", 7);    // tone ~65, 7.0:1 (AAA)
+// Score any color pair 0–10 with WCAG thresholds + CVD simulation
+contrastChecker("#ffffff", "#ff0000").score;       // 4.6
+contrastChecker("#ffffff", "#ff0000").simulations.deuteranopia.score; // 3.8
 
-// Find a contrasting background for any foreground
-underColor("#ffffff");    // tone ~49, 4.5:1 contrast
-underColor("#ffffff", 7); // tone ~65, 7.0:1 (AAA)
+// Simulate color blindness (Machado 2009 — same as Chrome DevTools)
+simulateCVD("#ff0000", "protanopia");    // "#665900"
+simulateCVD("#ff0000", "deuteranopia");  // "#998700"
 
-// Blend multiple colors together in HCT space
-mix("#ff0000", "#0000ff");                    // purple midpoint
-mix("#ff0000", "#00ff00", "#0000ff");          // three-way blend
-
-// Interpolate between two colors in HCT space
-gradient("#ff0000", "#0000ff", 5);  // [red, ..., ..., ..., blue]
+// Check every on-* pair in a palette with a single call
+paletteChecker(theme).summary; // { total: 30, passingAA: 30, ... }
 ```
 
 ## Theme generation
 
-10 Material Design 3 variants for both light and dark:
+10 theme variants for both light and dark:
 
 ```ts
 import { palette } from "@panmdaa/colors";
@@ -66,14 +62,14 @@ import { palette } from "@panmdaa/colors";
 // All variants
 palette("#744c9d", { variant: "monochrome" });     // Grayscale
 palette("#744c9d", { variant: "neutral" });        // Muted, neutral
-palette("#744c9d", { variant: "tonal-spot" });     // Default M3 — subtle tint
+palette("#744c9d", { variant: "tonal-spot" });     // Default — subtle, balanced tint
 palette("#744c9d", { variant: "vibrant" });        // High chroma
 palette("#744c9d", { variant: "expressive" });     // Rotated hues
 palette("#744c9d", { variant: "fidelity" });       // Source color faithful
 palette("#744c9d", { variant: "content" });        // Content-based
 palette("#744c9d", { variant: "rainbow" });        // Rainbow spectrum
 palette("#744c9d", { variant: "fruit-salad" });    // Colorful, playful
-palette("#744c9d", { variant: "cmf" });            // Custom Material You
+palette("#744c9d", { variant: "cmf" });            // Custom configurable variant
 ```
 
 Each returns a `Theme` with `light` and `dark` palettes of 53 color roles:
@@ -206,7 +202,9 @@ generateCSSSheet(theme, {
 // [data-theme="dark"] { ... }
 ```
 
-## WCAG contrast reports
+## Accessibility
+
+### Contrast reports
 
 Audit all foreground/background pairs in your theme:
 
@@ -232,6 +230,109 @@ const theme2 = palette("#6750a4", {
 });
 report(theme2).pairs.some(p => p.role === "brand"); // true
 ```
+
+### Contrast checker
+
+Score any color pair from 0–10 with WCAG thresholds and optional color vision deficiency simulation:
+
+```ts
+import { contrastChecker } from "@panmdaa/colors";
+
+// Single pair — includes CVD simulations by default
+const score = contrastChecker("#ffffff", "#ff0000");
+// { ratio: 4.0, score: 4.6, smallText: 4.3, largeText: 6.3 }
+// score.simulations.protanopia   → { ratio: 6.4, score: 6.1, ... }
+// score.simulations.deuteranopia → { ratio: 3.2, score: 3.8, ... }
+// score.simulations.tritanopia   → { ratio: 4.0, score: 4.5, ... }
+
+// Without CVD — returns plain ContrastScore
+contrastChecker("#ffffff", "#ff0000", false);
+// { ratio: 4.0, score: 4.6, smallText: 4.3, largeText: 6.3 }
+```
+
+Three scores per result:
+
+| Field | Range | Thresholds |
+|-------|-------|------------|
+| `score` | 0–10 | Logarithmic scale: `log2(ratio) / log2(21) × 10` |
+| `smallText` | 0–10 | AA (4.5:1) = 5, AAA (7:1) = 7 |
+| `largeText` | 0–10 | AA (3:1) = 5, AAA (4.5:1) = 7 |
+
+Under the hood, CVD simulations use the **Machado (2009) physiologically-based model** — the same algorithm Chrome DevTools uses for "Emulate vision deficiencies". Both `base` and `on` colors are simulated before computing the contrast ratio.
+
+### Palette checker
+
+Check every `on-*` pair in a generated palette with a single call — works with the full theme or a single mode:
+
+```ts
+import { palette, paletteChecker } from "@panmdaa/colors";
+
+const pal = palette("#6750a4", {
+  variant: "tonal-spot",
+  extraColors: { warning: "#ff8800" },
+});
+
+// Full theme — light + dark + global summary
+const check = paletteChecker(pal);
+check.summary;
+// { total: 30, passingAA: 30, passingAALarge: 30, passingAAA: 8 }
+
+check.light.summary;
+// { total: 15, passingAA: 15, passingAALarge: 15, passingAAA: 4 }
+
+// Each pair has WCAG booleans and CVD simulations (by default)
+check.light.pairs[0];
+// { role: "primary", onRole: "on-primary", base: "#b091ce", on: "#1e192b",
+//   score: { ratio: 6.04, ... }, AA: true, AALarge: true, AAA: false,
+//   simulations: { protanopia: { base: "...", on: "...", score: {...}, AA: true, ... }, ... } }
+
+// Single mode — pass light or dark directly
+const lightCheck = paletteChecker(pal.light);
+lightCheck.summary; // { total: 15, ... }
+
+// Disable CVD simulations
+const plain = paletteChecker(pal, false);
+```
+
+Each CVD simulation includes the simulated colors so you can see exactly what shifts:
+
+```ts
+const deuteranopia = check.light.pairs[0].simulations.deuteranopia;
+deuteranopia.base;  // "#3f527b" — simulated background
+deuteranopia.on;    // "#dae3fe" — simulated foreground
+deuteranopia.AA;    // true — still passes
+```
+
+## Color blindness simulation
+
+Simulate how any color appears under the most common color vision deficiencies:
+
+```ts
+import { simulateCVD, simulateAllCVD } from "@panmdaa/colors";
+
+// Single simulation
+simulateCVD("#ff0000", "protanopia");    // "#665900" (red → brown)
+simulateCVD("#ff0000", "deuteranopia");  // "#998700" (red → olive)
+simulateCVD("#ff0000", "tritanopia");    // "#ff000e" (nearly unchanged)
+
+// All three at once
+simulateAllCVD("#ff0000");
+// { protanopia: "#665900", deuteranopia: "#998700", tritanopia: "#ff000e" }
+
+// Partial deficiency (anomalous trichromacy)
+simulateCVD("#ff0000", "protanopia", "mild"); // "#a95000"
+
+// White is unaffected (no chroma to lose)
+simulateCVD("#ffffff", "protanopia"); // "#ffffff"
+```
+
+The simulation uses the **Machado (2009) physiologically-based model** with matrices from Machado (2010) — the same algorithm Chrome DevTools uses internally. The pipeline is `sRGB → linear RGB → matrix transform → sRGB`, ensuring physically accurate results.
+
+| Type | Affected cones | Common colors confused |
+|------|---------------|----------------------|
+| `protanopia` | Red (L) | Red-green, blue-violet |
+| `deuteranopia` | Green (M) | Red-green, rose-green |
+| `tritanopia` | Blue (S) | Blue-yellow, green-cyan |
 
 ## Color manipulation
 
@@ -350,6 +451,10 @@ const theme = palette(seed, { variant: "expressive" });
 | `generateCSS(theme, options?)` | CSS custom properties string |
 | `generateCSSSheet(theme, options?)` | Full stylesheet with light/dark blocks |
 | `report(theme, mode?)` | WCAG contrast report for all `on-*` pairs |
+| `contrastChecker(base, on, cvd?)` | Contrast score 0–10 with optional CVD simulation |
+| `paletteChecker(theme/palette, cvd?)` | Check all `on-*` pairs with scores, WCAG flags, and CVD |
+| `simulateCVD(color, deficiency, severity?)` | Simulate color under protanopia/deuteranopia/tritanopia |
+| `simulateAllCVD(color, severity?)` | Simulate color under all three deficiencies at once |
 | `toNumber(color)` | `#rrggbb` → ARGB integer |
 | `fromNumber(color)` | ARGB integer → `#rrggbb` |
 | `hct(color)` | `#rrggbb` → HCT color object |
@@ -377,7 +482,7 @@ Today, `@panmdaa/colors` is developed independently as part of the Panmdaa ecosy
 
 **Key differentiators:**
 
-- **`@panmdaa/colors`** is the only library that combines HCT color science, full M3 theme generation, custom token extensibility, contrast reports, and image quantization in a single tree-shakeable zero-dependency package.
+- **`@panmdaa/colors`** is the only library that combines HCT color science, full design system theme generation, custom token extensibility, contrast scores with CVD simulation, palette-wide accessibility checks, and image quantization in a single tree-shakeable zero-dependency package.
 - **Material Color Utilities** is Google's reference implementation. Its API is designed for internal Material Design usage and lacks ergonomic utilities like `palette()`, `onColor()`, `report()`, or CSS string generation.
 - **Culori** and **Chroma.js** are general-purpose color manipulation libraries with excellent interpolation, but they don't generate design-system themes from a seed color.
 - **Radix Colors** provides well-crafted light/dark scales for UI but doesn't handle HCT, dynamic theme generation, or programmatic color science.
@@ -390,12 +495,12 @@ src/
 ├── palette/     ← TonalPalette (hue + chroma → tones)
 ├── scheme/      ← DynamicScheme, DynamicColor, 10 variants
 ├── spec/        ← Token definitions, palette specs, color calculation
-├── science/     ← Blend, dislike analyzer, temperature, score
+├── science/     ← Blend, dislike analyzer, color blindness, temperature, score
 ├── quantize/    ← Image quantization (Wu, Celebi)
 └── utils/       ← Color/math/string utilities
 ```
 
-Fork of [Material Color Utilities](https://github.com/material-foundation/material-color-utilities) (TypeScript), spec version 2026.
+Built on proven color science, spec version 2026.
 
 ## Scripts
 
