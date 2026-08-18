@@ -9,6 +9,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import type { Hct } from './hct';
+import type { DynamicScheme } from './scheme';
+
 export type ColorValue = `#${string}`;
 
 export type ColorScheme = 'dark' | 'light';
@@ -77,7 +80,7 @@ export interface Theme {
 
 export type Tones = 0 | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 | 95 | 98 | 99 | 100;
 
-export type Variant =
+export type BuiltInVariant =
 	| 'monochrome'
 	| 'neutral'
 	| 'tonal-spot'
@@ -87,7 +90,20 @@ export type Variant =
 	| 'content'
 	| 'rainbow'
 	| 'fruit-salad'
-	| 'cmf';
+	| 'cmf'
+	| 'soft'
+	| 'muted'
+	| 'warm'
+	| 'cool'
+	| 'high-contrast';
+
+export type VariantSchemeClass = new (
+	sourceColorHct: Hct,
+	isDark: boolean,
+	contrastLevel: number,
+) => DynamicScheme;
+
+export type Variant = BuiltInVariant | VariantSchemeClass;
 
 export interface GradientOptions {
 	from: string;

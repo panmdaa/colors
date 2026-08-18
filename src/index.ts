@@ -11,6 +11,26 @@
 
 export * from './color';
 export * from './color-class';
+export * from './hct';
+export { Variant as SchemeVariant } from './scheme/variant';
+export {
+	VariantScheme,
+	SchemeContent,
+	SchemeExpressive,
+	SchemeFidelity,
+	SchemeFruitSalad,
+	SchemeMonochrome,
+	SchemeNeutral,
+	SchemeRainbow,
+	SchemeSoft,
+	SchemeMuted,
+	SchemeWarm,
+	SchemeCool,
+	SchemeHighContrast,
+	SchemeTonalSpot,
+	SchemeVibrant,
+	SchemeCmf,
+} from './variants';
 export * from './css-props';
 export * from './css-sheet';
 export * from './report';

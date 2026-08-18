@@ -54,7 +54,7 @@ paletteChecker(theme).summary; // { total: 30, passingAA: 30, ... }
 
 ## Theme generation
 
-10 theme variants for both light and dark:
+15 theme variants for both light and dark:
 
 ```ts
 import { palette } from "@panmdaa/colors";
@@ -70,7 +70,49 @@ palette("#744c9d", { variant: "content" });        // Content-based
 palette("#744c9d", { variant: "rainbow" });        // Rainbow spectrum
 palette("#744c9d", { variant: "fruit-salad" });    // Colorful, playful
 palette("#744c9d", { variant: "cmf" });            // Custom configurable variant
+palette("#744c9d", { variant: "soft" });            // Softer, lower-chroma
+palette("#744c9d", { variant: "muted" });           // Quiet, low-chroma
+palette("#744c9d", { variant: "warm" });            // Warm-tinted hues
+palette("#744c9d", { variant: "cool" });            // Cool-tinted hues
+palette("#744c9d", { variant: "high-contrast" });   // Stronger chroma separation
 ```
+
+You can also create your own variant by extending `VariantScheme` directly and overriding only the palette methods you need:
+
+```ts
+import { Hct, VariantScheme, SchemeVariant, palette } from "@panmdaa/colors";
+
+class BrandSoft extends VariantScheme {
+  constructor(sourceColorOrList: Hct | Hct[], isDark: boolean, contrastLevel: number) {
+    super(sourceColorOrList, isDark, contrastLevel, SchemeVariant.TONAL_SPOT);
+  }
+
+  static override primaryPalette(sourceColorOrList: Hct | Hct[], isDark: boolean, _contrastLevel: number) {
+    const source = Array.isArray(sourceColorOrList)
+      ? sourceColorOrList[0] ?? Hct.fromInt(0)
+      : sourceColorOrList;
+    return this.tonalPalette(source.hue, isDark ? 16 : 20);
+  }
+
+  static override secondaryPalette(sourceColorOrList: Hct | Hct[], _isDark: boolean, _contrastLevel: number) {
+    const source = Array.isArray(sourceColorOrList)
+      ? sourceColorOrList[0] ?? Hct.fromInt(0)
+      : sourceColorOrList;
+    return this.tonalPalette(source.hue, 12);
+  }
+
+  static override tertiaryPalette(sourceColorOrList: Hct | Hct[], _isDark: boolean, _contrastLevel: number) {
+    const source = Array.isArray(sourceColorOrList)
+      ? sourceColorOrList[0] ?? Hct.fromInt(0)
+      : sourceColorOrList;
+    return this.tonalPalette((source.hue + 40) % 360, 24);
+  }
+}
+
+const theme = palette("#744c9d", { variant: BrandSoft });
+```
+
+`variant` can be either one of the built-in string variants or a custom class that extends `VariantScheme`. The custom class receives the source HCT color, `isDark`, and `contrastLevel` in its constructor, and can override only the palette methods it needs.
 
 Each returns a `Theme` with `light` and `dark` palettes of 53 color roles:
 
@@ -506,7 +548,7 @@ Today, `@panmdaa/colors` is developed independently as part of the Panmdaa ecosy
 src/
 ├── hct/         ← HCT color space (CAM16, viewing conditions)
 ├── palette/     ← TonalPalette (hue + chroma → tones)
-├── scheme/      ← DynamicScheme, DynamicColor, 10 variants
+├── scheme/      ← DynamicScheme, DynamicColor, variants
 ├── spec/        ← Token definitions, palette specs, color calculation
 ├── science/     ← Blend, dislike analyzer, color blindness, temperature, score
 ├── quantize/    ← Image quantization (Wu, Celebi)

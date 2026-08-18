@@ -1,12 +1,15 @@
 import { describe, it } from "vitest";
 import assert from "node:assert/strict";
 import { Color, palette } from "../../src/color";
+import { Hct } from "../../src/hct";
 import { Contrast } from "../../src/utils";
 import type { Palette } from "../../src/types";
+import { VariantScheme } from "../../src/variants";
+import { Variant } from "../../src/scheme/variant";
 import { approx } from "../helpers";
 
 describe("color correctness — palette generation", () => {
-	it("generates palettes for all 9 variants", () => {
+	it("generates palettes for all 15 variants", () => {
 		const variants = [
 			"monochrome",
 			"neutral",
@@ -17,6 +20,12 @@ describe("color correctness — palette generation", () => {
 			"content",
 			"rainbow",
 			"fruit-salad",
+			"cmf",
+			"soft",
+			"muted",
+			"warm",
+			"cool",
+			"high-contrast",
 		] as const;
 		for (const variant of variants) {
 			const theme = palette("#6750a4", { variant });
@@ -128,6 +137,42 @@ describe("color correctness — palette generation", () => {
 		const chromaVibrant = Color.getChroma(vibrant);
 		assert.ok(chromaVibrant > chromaMono,
 			`vibrant chroma (${chromaVibrant}) should exceed monochrome (${chromaMono})`);
+	});
+
+	it("supports a custom variant class", () => {
+		class BrandSoft extends VariantScheme {
+			constructor(sourceColorOrList: Hct | Hct[], isDark: boolean, contrastLevel: number) {
+				super(sourceColorOrList, isDark, contrastLevel, Variant.TONAL_SPOT);
+			}
+
+			static override primaryPalette(sourceColorOrList: Hct | Hct[], isDark: boolean, _contrastLevel: number) {
+				const source = Array.isArray(sourceColorOrList)
+					? sourceColorOrList[0] ?? Hct.fromInt(0)
+					: sourceColorOrList;
+
+				return this.tonalPalette(source.hue, isDark ? 16 : 20);
+			}
+
+			static override secondaryPalette(sourceColorOrList: Hct | Hct[], _isDark: boolean, _contrastLevel: number) {
+				const source = Array.isArray(sourceColorOrList)
+					? sourceColorOrList[0] ?? Hct.fromInt(0)
+					: sourceColorOrList;
+
+				return this.tonalPalette(source.hue, 12);
+			}
+
+			static override tertiaryPalette(sourceColorOrList: Hct | Hct[], _isDark: boolean, _contrastLevel: number) {
+				const source = Array.isArray(sourceColorOrList)
+					? sourceColorOrList[0] ?? Hct.fromInt(0)
+					: sourceColorOrList;
+
+				return this.tonalPalette((source.hue + 40) % 360, 24);
+			}
+		}
+
+		const theme = palette("#6750a4", { variant: BrandSoft });
+		assert.match(theme.light.primary, /^#[0-9a-f]{6}$/);
+		assert.match(theme.dark.primary, /^#[0-9a-f]{6}$/);
 	});
 
 	it("extraColors — direct color with on-*", () => {

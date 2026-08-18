@@ -15,4 +15,5 @@ export * from './dynamic-scheme';
 export * from './color-roles';
 export * from './tone-delta-pair';
 export * from './variant';
-export * from './variants';
+export * from '../variants/variant-scheme';
+export * from '../variants';

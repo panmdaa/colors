@@ -9,11 +9,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/**
- * Set of themes supported by Dynamic Color.
- * Instantiate the corresponding subclass, ex. SchemeTonalSpot, to create
- * colors corresponding to the theme.
- */
 export enum Variant {
 	MONOCHROME = 0,
 	NEUTRAL = 1,
