@@ -36,10 +36,12 @@ Two separate claims are being made, and both hold:
    (`package.json:36-38`) and, for `fromImage`, a browser DOM.
 
 What the library *does* have is a rich set of **devDependencies**
-(`package.json:75-86`) — TypeScript, Vitest, tsup, Biome, and crucially
-`@material/material-color-utilities`, `chroma-js`, `culori`, and `tinycolor2`.
-Those exist to *test against and benchmark against* the competition; they are
-never bundled and never shipped. The published tarball (`package.json:69-74`,
+(`package.json:75-82`) — TypeScript, Vitest, tsup, Biome, and `@types/node`.
+Those exist to build, test, and lint the library itself; they are never bundled
+and never shipped. The benchmark suite lives in its own subproject
+(`bench/package.json`) with the comparison libraries (`chroma-js`, `culori`) as
+its own devDependencies, so nothing benchmark-only leaks into the library's
+dependency tree. The published tarball (`package.json:61-66`,
 `files: ["dist", "misc", "LICENSE", "README.md"]`) contains no third-party code.
 
 ## The bundle size story
@@ -152,16 +154,16 @@ necessary but not sufficient. The real differentiator is combining that property
 with HCT + dynamic theme generation + CVD-aware contrast in a single package
 (`README.md:485`).
 
-There is a wrinkle worth flagging: `tinycolor2` sits in `devDependencies`
-(`package.json:80`) but is not referenced anywhere in `bench/` or `test/`. It
-appears to be listed for comparison purposes but is currently unused, unlike
-`chroma-js` and `culori`, which the benchmark suite actually imports
-(`bench/contrast.bench.ts:5-6`, `bench/color.bench.ts:15-16`).
+There is a wrinkle worth flagging: `tinycolor2` used to sit in
+`devDependencies` but is not referenced anywhere in `bench/` or `test/`. It
+appears to have been listed for comparison purposes but was unused, so it was
+dropped when the benchmarks moved to their own subproject. `chroma-js` and
+`culori` are imported by the benchmark suite (`bench/contrast.bench.ts:5-6`,
+`bench/color.bench.ts:15-16`) and now live in `bench/package.json`.
 
-Also note: `@material/material-color-utilities` is in devDependencies
-(`package.json:76`) for reference, but it cannot even be benchmarked — its
-internal imports are missing `.js` extensions, making the package unloadable in
-Node/Vitest, as documented in `bench/theme.bench.ts:5-8`.
+Also note: `@material/material-color-utilities` cannot even be benchmarked —
+its internal imports are missing `.js` extensions, making the package unloadable
+in Node/Vitest, as documented in `bench/theme.bench.ts:5-8`.
 
 ## The verdict
 

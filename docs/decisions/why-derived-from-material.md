@@ -142,11 +142,12 @@ science while replacing the shape.**
   not by re-porting the whole upstream codebase.
 
 The strongest evidence is the inverse test: `@material/material-color-utilities`
-is in devDependencies (`package.json:76`) precisely to be compared against, and
-it cannot even be benchmarked — its internal imports are missing `.js`
-extensions and the package fails to load in Node and Vitest
-(`bench/theme.bench.ts:5-8`). The dependency's own packaging is a reason a
-maintained fork/derivative is more usable than the upstream.
+was kept around precisely to be compared against, and it cannot even be
+benchmarked — its internal imports are missing `.js` extensions and the package
+fails to load in Node and Vitest (`bench/theme.bench.ts:5-8`). The dependency's
+own packaging is a reason a maintained fork/derivative is more usable than the
+upstream. (The benchmark subproject in `bench/` carries only the libs that
+actually load: `chroma-js` and `culori`.)
 
 ## Why not culori / chroma-js / tinycolor2 / Radix Colors
 
@@ -154,7 +155,7 @@ maintained fork/derivative is more usable than the upstream.
 |---------|-------------------|-------------------------------|
 | **culori** | Excellent general color space conversions and interpolation (`wcagContrast` is used in `bench/contrast.bench.ts:5`) | No HCT, no dynamic theme generation, no design-system roles, no contrast scoring with CVD, no CSS emission. It is a toolbox, not a design-system generator. |
 | **chroma-js** | Mature, ubiquitous color manipulation and contrast (`bench/color.bench.ts:16`) | Same gap: no HCT/dynamic color, no theming. Also a single monolithic class API that cannot express the role graph. |
-| **tinycolor2** | Tiny footprint, simple string manipulation | Even more limited: no color appearance model, no contrast math beyond ratios, no theming. Listed in `devDependencies` (`package.json:80`) but not actually used anywhere in `bench/` or `test/`. |
+| **tinycolor2** | Tiny footprint, simple string manipulation | Even more limited: no color appearance model, no contrast math beyond ratios, no theming. Not referenced anywhere in `bench/` or `test/`. |
 | **Radix Colors** | Beautiful pre-baked light/dark UI scales (`README.md:488`) | Static. There is no HCT, no seed-color generation, no programmatic color science. You cannot ask it to generate a theme from `#744c9d`. |
 | **@material/material-color-utilities** | The exact color science this project is built on | The API is for Google's internal use, lacks the ergonomic surface, and ships broken ESM (`bench/theme.bench.ts:5-8`). |
 
