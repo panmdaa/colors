@@ -1,6 +1,6 @@
 import { describe, it } from "vitest";
 import assert from "node:assert/strict";
-import { fixDisliked, fromNumber, getTone, isDisliked } from "../../src/color";
+import { Color } from "../../src/color";
 import { DislikeAnalyzer } from "../../src/science";
 import { Hct as MaterialHct } from "../../src/hct";
 
@@ -11,16 +11,16 @@ describe("color correctness — dislike", () => {
 	});
 
 	it("accepts red as not disliked", () => {
-		assert.ok(!isDisliked("#ff0000"));
+		assert.ok(!Color.isDisliked("#ff0000"));
 	});
 
 	it("fixDisliked lightens disliked color to tone ~70", () => {
 		const h = MaterialHct.from(100, 40, 50);
-		const fixed = fixDisliked(fromNumber(h.toInt()));
-		assert.ok(getTone(fixed) >= 65, `expected tone ~70, got ${getTone(fixed)}`);
+		const fixed = Color.fixDisliked(Color.fromNumber(h.toInt()).hex);
+		assert.ok(Color.getTone(fixed.hex) >= 65, `expected tone ~70, got ${Color.getTone(fixed.hex)}`);
 	});
 
 	it("fixDisliked leaves acceptable color unchanged", () => {
-		assert.equal(fixDisliked("#ff0000"), "#ff0000");
+		assert.equal(Color.fixDisliked("#ff0000").hex, "#ff0000");
 	});
 });

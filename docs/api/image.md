@@ -1,4 +1,4 @@
-# Image Seed Extraction (`fromImage`)
+# Image Seed Extraction (`Color.fromImage`)
 
 - [The public entry point](#the-public-entry-point)
 - [Under the hood](#under-the-hood)
@@ -6,19 +6,19 @@
 
 ## The public entry point
 
-`fromImage` is the thin public wrapper that extracts a dominant, perceptually
-pleasing seed color from an `<img>` element:
+`Color.fromImage` is the thin public wrapper that extracts a dominant,
+perceptually pleasing seed color from an `<img>` element:
 
 ```ts
-// src/color.ts:31-33
-export function fromImage(image: HTMLImageElement): Promise<ColorValue> {
-	return sourceColorFromImage(image).then((n) => fromNumber(n!));
+// src/color-class.ts
+static fromImage(image: HTMLImageElement): Promise<Color> {
+	return sourceColorFromImage(image).then((n) => Color.from(n!));
 }
 ```
 
 It takes an `HTMLImageElement`, delegates to `sourceColorFromImage` from the
-science layer, and converts the returned ARGB integer back to a hex string. It
-returns a `Promise` because image decoding and pixel sampling are asynchronous.
+science layer, and wraps the returned ARGB integer in a `Color`. It returns a
+`Promise` because image decoding and pixel sampling are asynchronous.
 
 ## Under the hood
 
@@ -38,10 +38,10 @@ The full trace lives in [science/image](../science/image.md).
 ## When to use it
 
 ```ts
-import { fromImage, palette } from "@panmdaa/colors";
+import { Color, palette } from "@panmdaa/colors";
 
-const seed = await fromImage(imageElement);   // e.g. "#744c9d"
-const theme = palette(seed, { variant: "expressive" });
+const seed = await Color.fromImage(imageElement);   // e.g. Color for "#744c9d"
+const theme = palette(seed.hex, { variant: "expressive" });
 ```
 
 This is the natural entry point for building a theme that *feels like a photo*:

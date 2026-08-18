@@ -161,6 +161,74 @@ export class Cam16 {
 	}
 
 	/**
+	 * Lean forward pass that computes only the dimensions HCT needs — hue,
+	 * chroma, and the XYZ `y` coordinate (used to derive L* / tone) — without
+	 * allocating a full {@link Cam16} object or recomputing the RGB to XYZ
+	 * transformation for the tone. Several orders of magnitude faster for the
+	 * hot paths of {@link Hct} construction.
+	 *
+	 * @param argb ARGB representation of a color.
+	 * @param viewingConditions Information about the environment where the color
+	 *     was observed.
+	 */
+	static hctFromArgbInViewingConditions(
+		argb: number,
+		viewingConditions: ViewingConditions
+	): { hue: number; chroma: number; y: number } {
+		const red = (argb & 0x00ff0000) >> 16;
+		const green = (argb & 0x0000ff00) >> 8;
+		const blue = argb & 0x000000ff;
+		const redL = linearized(red);
+		const greenL = linearized(green);
+		const blueL = linearized(blue);
+		const x = 0.41233895 * redL + 0.35762064 * greenL + 0.18051042 * blueL;
+		const y = 0.2126 * redL + 0.7152 * greenL + 0.0722 * blueL;
+		const z = 0.01932141 * redL + 0.11916382 * greenL + 0.95034478 * blueL;
+
+		const rC = 0.401288 * x + 0.650173 * y - 0.051461 * z;
+		const gC = -0.250268 * x + 1.204414 * y + 0.045854 * z;
+		const bC = -0.002079 * x + 0.048952 * y + 0.953127 * z;
+
+		const rD = (viewingConditions.rgbD[0] ?? 1) * rC;
+		const gD = (viewingConditions.rgbD[1] ?? 1) * gC;
+		const bD = (viewingConditions.rgbD[2] ?? 1) * bC;
+
+		const rAF = ((viewingConditions.fl * Math.abs(rD)) / 100.0) ** 0.42;
+		const gAF = ((viewingConditions.fl * Math.abs(gD)) / 100.0) ** 0.42;
+		const bAF = ((viewingConditions.fl * Math.abs(bD)) / 100.0) ** 0.42;
+
+		const rA = (signum(rD) * 400.0 * rAF) / (rAF + 27.13);
+		const gA = (signum(gD) * 400.0 * gAF) / (gAF + 27.13);
+		const bA = (signum(bD) * 400.0 * bAF) / (bAF + 27.13);
+
+		const a = (11.0 * rA + -12.0 * gA + bA) / 11.0;
+		const b = (rA + gA - 2.0 * bA) / 9.0;
+		const u = (20.0 * rA + 20.0 * gA + 21.0 * bA) / 20.0;
+		const p2 = (40.0 * rA + 20.0 * gA + bA) / 20.0;
+		const hue = sanitizeDegreesDouble((Math.atan2(b, a) * 180.0) / Math.PI);
+
+		const ac = p2 * viewingConditions.nbb;
+		const j =
+			100.0 * (ac / viewingConditions.aw) ** (viewingConditions.c * viewingConditions.z);
+		const huePrime = hue < 20.14 ? hue + 360 : hue;
+		const eHue = 0.25 * (Math.cos((huePrime * Math.PI) / 180.0 + 2.0) + 3.8);
+		const p1 = (50000.0 / 13.0) * eHue * viewingConditions.nc * viewingConditions.ncb;
+		const t = (p1 * Math.sqrt(a * a + b * b)) / (u + 0.305);
+		const alpha = t ** 0.9 * (1.64 - 0.29 ** viewingConditions.n) ** 0.73;
+		const chroma = alpha * Math.sqrt(j / 100.0);
+
+		return { hue, chroma, y };
+	}
+
+	/**
+	 * @param argb ARGB representation of a color.
+	 * @return The HCT dimensions HCT needs, in default viewing conditions.
+	 */
+	static hctFromArgb(argb: number): { hue: number; chroma: number; y: number } {
+		return Cam16.hctFromArgbInViewingConditions(argb, ViewingConditions.DEFAULT);
+	}
+
+	/**
 	 * @param j CAM16 lightness
 	 * @param c CAM16 chroma
 	 * @param h CAM16 hue

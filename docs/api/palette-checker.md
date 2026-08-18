@@ -42,7 +42,7 @@ function scanPairs(
       handled.add(onRole);
       const base = palette[role]!;
       const on = palette[onRole]!;
-      const ratio = Contrast.ratioOfTones(getTone(base), getTone(on));
+      const ratio = Contrast.ratioOfTones(Color.getTone(base), Color.getTone(on));
       const score = toScore(ratio);
       const AA = ratio >= 4.5;
       const AALarge = ratio >= 3.0;
@@ -164,7 +164,7 @@ enabled, each pair gets a `simulations` map built by `buildSimulation`
 ```ts
 const simBase = simulateCVD(base, deficiency);
 const simOn = simulateCVD(on, deficiency);
-const simRatio = Contrast.ratioOfTones(getTone(simBase), getTone(simOn));
+const simRatio = Contrast.ratioOfTones(Color.getTone(simBase), Color.getTone(simOn));
 return {
   base: simBase,
   on: simOn,

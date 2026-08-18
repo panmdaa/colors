@@ -1,90 +1,89 @@
 import { describe, it } from "vitest";
 import assert from "node:assert/strict";
-import { onColor, underColor, mix, gradient, palette } from "../../src/color";
+import { Color, palette } from "../../src/color";
 import { generateCSSSheet } from "../../src/css-sheet";
 import { report } from "../../src/report";
 import { Contrast } from "../../src/utils";
-import { getTone } from "../../src/color";
 
 describe("onColor", () => {
 	it("dark bg gets light foreground", () => {
-		const fg = onColor("#000000");
-		const ratio = Contrast.ratioOfTones(getTone("#000000"), getTone(fg));
+		const fg = Color.onColor("#000000").hex;
+		const ratio = Contrast.ratioOfTones(Color.getTone("#000000"), Color.getTone(fg));
 		assert.ok(ratio >= 4.5, `contrast ${ratio}:1`);
 	});
 
 	it("light bg gets dark foreground", () => {
-		const fg = onColor("#ffffff");
-		const ratio = Contrast.ratioOfTones(getTone("#ffffff"), getTone(fg));
+		const fg = Color.onColor("#ffffff").hex;
+		const ratio = Contrast.ratioOfTones(Color.getTone("#ffffff"), Color.getTone(fg));
 		assert.ok(ratio >= 4.5, `contrast ${ratio}:1`);
 	});
 
 	it("customizes contrast ratio", () => {
-		const fg = onColor("#000000", 7);
-		const ratio = Contrast.ratioOfTones(getTone("#000000"), getTone(fg));
+		const fg = Color.onColor("#000000", 7).hex;
+		const ratio = Contrast.ratioOfTones(Color.getTone("#000000"), Color.getTone(fg));
 		assert.ok(ratio >= 7.0, `contrast ${ratio}:1`);
 	});
 
 	it("colored bg achieves at least 4.5:1", () => {
 		const bg = "#b091ce";
-		const fg = onColor(bg);
-		const ratio = Contrast.ratioOfTones(getTone(bg), getTone(fg));
+		const fg = Color.onColor(bg).hex;
+		const ratio = Contrast.ratioOfTones(Color.getTone(bg), Color.getTone(fg));
 		assert.ok(ratio >= 4.5, `contrast ${ratio}:1`);
 	});
 });
 
 describe("underColor", () => {
 	it("dark fg gets light background", () => {
-		const bg = underColor("#000000");
-		const ratio = Contrast.ratioOfTones(getTone(bg), getTone("#000000"));
+		const bg = Color.underColor("#000000").hex;
+		const ratio = Contrast.ratioOfTones(Color.getTone(bg), Color.getTone("#000000"));
 		assert.ok(ratio >= 4.5, `contrast ${ratio}:1`);
 	});
 
 	it("light fg gets dark background", () => {
-		const bg = underColor("#ffffff");
-		const ratio = Contrast.ratioOfTones(getTone("#ffffff"), getTone(bg));
+		const bg = Color.underColor("#ffffff").hex;
+		const ratio = Contrast.ratioOfTones(Color.getTone("#ffffff"), Color.getTone(bg));
 		assert.ok(ratio >= 4.5, `contrast ${ratio}:1`);
 	});
 
 	it("customizes contrast ratio", () => {
-		const bg = underColor("#000000", 7);
-		const ratio = Contrast.ratioOfTones(getTone(bg), getTone("#000000"));
+		const bg = Color.underColor("#000000", 7).hex;
+		const ratio = Contrast.ratioOfTones(Color.getTone(bg), Color.getTone("#000000"));
 		assert.ok(ratio >= 7.0, `contrast ${ratio}:1`);
 	});
 });
 
 describe("mix", () => {
 	it("single color returns itself", () => {
-		assert.equal(mix("#ff0000"), "#ff0000");
+		assert.equal(Color.mix("#ff0000").hex, "#ff0000");
 	});
 
 	it("two colors average in HCT", () => {
-		const result = mix("#ff0000", "#0000ff");
+		const result = Color.mix("#ff0000", "#0000ff").hex;
 		assert.ok(result.startsWith("#"));
 		assert.equal(result.length, 7);
 	});
 
 	it("three colors blend without error", () => {
-		const result = mix("#ff0000", "#00ff00", "#0000ff");
+		const result = Color.mix("#ff0000", "#00ff00", "#0000ff").hex;
 		assert.ok(result.startsWith("#"));
 		assert.equal(result.length, 7);
 	});
 
 	it("identical colors return same color", () => {
-		const result = mix("#744c9d", "#744c9d", "#744c9d");
+		const result = Color.mix("#744c9d", "#744c9d", "#744c9d").hex;
 		assert.equal(result, "#744c9d");
 	});
 });
 
 describe("gradient", () => {
 	it("returns start and end colors", () => {
-		const s = gradient("#000000", "#ffffff", 2);
+		const s = Color.gradient("#000000", "#ffffff", 2);
 		assert.equal(s[0], "#000000");
 		assert.equal(s[1], "#ffffff");
 	});
 
 	it("returns interpolated colors for count=5", () => {
-		const s = gradient("#000000", "#ffffff", 5);
+		const s = Color.gradient("#000000", "#ffffff", 5);
 		assert.equal(s.length, 5);
 		assert.equal(s[0], "#000000");
 		assert.equal(s[4], "#ffffff");
@@ -93,13 +92,13 @@ describe("gradient", () => {
 	});
 
 	it("handles count=1 (same color)", () => {
-		const s = gradient("#ff0000", "#0000ff", 1);
+		const s = Color.gradient("#ff0000", "#0000ff", 1);
 		assert.equal(s.length, 1);
 		assert.equal(s[0], "#ff0000");
 	});
 
 	it("interpolates from red to blue", () => {
-		const s = gradient("#ff0000", "#0000ff", 3);
+		const s = Color.gradient("#ff0000", "#0000ff", 3);
 		assert.equal(s.length, 3);
 		assert.notEqual(s[0], s[1]);
 		assert.notEqual(s[1], s[2]);

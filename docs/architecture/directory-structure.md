@@ -22,9 +22,9 @@ and from layers below it (see [overview.md](./overview.md)).
 ```
 src/
 ├── index.ts          Public entry point (re-exports only)
-├── color.ts          Public API: palette, contrast, color editing
+├── color.ts          Public API: palette, contrast, CVD simulation
+├── color-class.ts    The `Color` class: editing, conversion, mix/gradient
 ├── extend-theme.ts   extraColors / custom token resolution
-├── gradient.ts       HCT gradient interpolation
 ├── css-props.ts      Theme → CSS custom properties
 ├── css-sheet.ts      Theme → full light/dark stylesheet
 ├── report.ts         WCAG contrast report for on-* pairs
@@ -210,17 +210,17 @@ except each other. Consumed by every other directory.
 The contrast utilities deserve special note: they operate on tones, not colors.
 `ratioOfTones` (`src/utils/contrast.ts:39-43`) converts both tones to Y via
 `yFromLstar` and applies `(lighter + 5) / (darker + 5)`. This is why the public
-`contrastChecker` only needs `getTone(base)` and `getTone(on)`
-(`src/color.ts:197`).
+`contrastChecker` only needs `Color.getTone(base)` and `Color.getTone(on)`
+(`src/color.ts`).
 
 ## Root files
 
 | File | Responsibility | Imports from | Feeds |
 |------|----------------|--------------|-------|
 | `index.ts` | Public entry point; re-exports `color`, `css-props`, `css-sheet`, `report`, `types` | all root files | consumers |
-| `color.ts` | The public API: `palette`, `contrastChecker`, `paletteChecker`, `mix`, `hct`, `onColor`, `simulateCVD` re-export, image, color editing | `utils`, `science`, `scheme`, `hct`, `extend-theme`, `types` | `index.ts` |
-| `extend-theme.ts` | `resolveCustomTokens`, `resolveOne`, `resolveMix`, `resolveGradient`, `generateOn`, `toKebabCase` | `utils`, `science`, `hct`, `gradient`, `types` | `color.ts` |
-| `gradient.ts` | `gradient(from, to, count)`: HCT-linear interpolation into N steps | `hct`, `utils`, `types` | `color.ts` (re-export), `extend-theme.ts` |
+| `color.ts` | The public API: `palette`, `contrastChecker`, `paletteChecker`, `simulateCVD` re-export | `utils`, `science`, `scheme`, `hct`, `extend-theme`, `types` | `index.ts` |
+| `color-class.ts` | The `Color` class: constructors, HCT getters/setters, `lighten`/`saturate`/`edit`, `onColor`/`underColor`, `mix`, `gradient`, `tones`, `harmonize`, `fixDisliked`, `toNumber`/`fromNumber`, `fromImage` | `utils`, `science`, `hct` | `color.ts`, `report.ts` |
+| `extend-theme.ts` | `resolveCustomTokens`, `resolveOne`, `resolveMix`, `resolveGradient`, `generateOn`, `toKebabCase` | `utils`, `science`, `hct`, `types` | `color.ts` |
 | `css-props.ts` | `generateCSS(palette, { prefix, transform })`: role → custom property string | `types` only | `index.ts` |
 | `css-sheet.ts` | `generateCSSSheet(theme, { prefix, lightSelector, darkSelector })`: full light/dark stylesheet | `types` only | `index.ts` |
 | `report.ts` | `report(theme, mode)`: WCAG contrast report over `on-*` pairs | `utils`, `color`, `types` | `index.ts` |

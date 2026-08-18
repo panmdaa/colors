@@ -1,25 +1,13 @@
 import { bench, describe } from "vitest";
-import {
-	getHue,
-	getChroma,
-	getTone,
-	lighten,
-	darken,
-	saturate,
-	desaturate,
-	rotateHue,
-	edit,
-	hct,
-	fromHct,
-} from "../src";
+import { Color } from "../src";
 import { formatHex, hsl, lch } from "culori";
 import chroma from "chroma-js";
 
 const SEED = "#744c9d" as const;
 
 describe("color space conversion (hex → internal)", () => {
-	bench("@panmdaa/colors hct()", () => {
-		hct(SEED);
+	bench("@panmdaa/colors Color.hct()", () => {
+		Color.hct(SEED);
 	});
 
 	bench("culori hsl()", () => {
@@ -36,10 +24,17 @@ describe("color space conversion (hex → internal)", () => {
 });
 
 describe("channel getters (hue/saturation/lightness)", () => {
-	bench("@panmdaa/colors getHue/getChroma/getTone", () => {
-		getHue(SEED);
-		getChroma(SEED);
-		getTone(SEED);
+	bench("@panmdaa/colors Color.getHue/Chroma/Tone", () => {
+		Color.getHue(SEED);
+		Color.getChroma(SEED);
+		Color.getTone(SEED);
+	});
+
+	bench("@panmdaa/colors Color.from().hue/.chroma/.tone (cached)", () => {
+		const c = Color.from(SEED);
+		c.hue;
+		c.chroma;
+		c.tone;
 	});
 
 	bench("culori hsl.h/.s/.l", () => {
@@ -53,8 +48,12 @@ describe("channel getters (hue/saturation/lightness)", () => {
 });
 
 describe("lighten +10", () => {
-	bench("@panmdaa/colors lighten(10)", () => {
-		lighten(SEED, 10);
+	bench("@panmdaa/colors Color.lighten(10)", () => {
+		Color.lighten(SEED, 10);
+	});
+
+	bench("@panmdaa/colors Color.from().lighten(10) materialized", () => {
+		Color.from(SEED).lighten(10).hex;
 	});
 
 	bench("culori lch.l +10 + formatHex", () => {
@@ -69,8 +68,8 @@ describe("lighten +10", () => {
 });
 
 describe("darken -10", () => {
-	bench("@panmdaa/colors darken(10)", () => {
-		darken(SEED, 10);
+	bench("@panmdaa/colors Color.darken(10)", () => {
+		Color.darken(SEED, 10);
 	});
 
 	bench("chroma-js .darken(1)", () => {
@@ -79,8 +78,8 @@ describe("darken -10", () => {
 });
 
 describe("saturate +20", () => {
-	bench("@panmdaa/colors saturate(20)", () => {
-		saturate(SEED, 20);
+	bench("@panmdaa/colors Color.saturate(20)", () => {
+		Color.saturate(SEED, 20);
 	});
 
 	bench("chroma-js .saturate(1)", () => {
@@ -89,8 +88,8 @@ describe("saturate +20", () => {
 });
 
 describe("rotate hue 90°", () => {
-	bench("@panmdaa/colors rotateHue(90)", () => {
-		rotateHue(SEED, 90);
+	bench("@panmdaa/colors Color.rotateHue(90)", () => {
+		Color.rotateHue(SEED, 90);
 	});
 
 	bench("chroma-js .set('hsl.h', '+90')", () => {
@@ -99,8 +98,8 @@ describe("rotate hue 90°", () => {
 });
 
 describe("reconstruct color from channels", () => {
-	bench("@panmdaa/colors fromHct()", () => {
-		fromHct(283, 36, 62);
+	bench("@panmdaa/colors Color.fromHct().hex", () => {
+		Color.fromHct(283, 36, 62).hex;
 	});
 
 	bench("culori lch → formatHex", () => {
@@ -113,8 +112,8 @@ describe("reconstruct color from channels", () => {
 });
 
 describe("batch edit (3 channels at once)", () => {
-	bench("@panmdaa/colors edit()", () => {
-		edit(SEED, { hue: 200, chroma: 40, tone: 70 });
+	bench("@panmdaa/colors Color.edit() (single solve)", () => {
+		Color.edit(SEED, { hue: 200, chroma: 40, tone: 70 });
 	});
 
 	bench("chroma-js 3x .set() chain", () => {
@@ -122,11 +121,9 @@ describe("batch edit (3 channels at once)", () => {
 	});
 });
 
-import { tones } from "../src";
-
 describe("tone ramp (14 reference tones)", () => {
-	bench("@panmdaa/colors tones()", () => {
-		tones(SEED);
+	bench("@panmdaa/colors Color.tones()", () => {
+		Color.tones(SEED);
 	});
 
 	bench("chroma-js 14x .luminance()", () => {

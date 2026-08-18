@@ -43,7 +43,7 @@ Every contrast computation in the library derives the ratio from **tone alone**
 — never from full RGB:
 
 ```ts
-const ratio = Contrast.ratioOfTones(getTone(base), getTone(on));   // color.ts:197, 246
+const ratio = Contrast.ratioOfTones(Color.getTone(base), Color.getTone(on));   // color.ts:197, 246
 ```
 
 `Contrast.ratioOfTones` (`src/utils/contrast.ts:39-49`) clamps both tones to
@@ -155,7 +155,7 @@ because its AA bar (3.0) is lower.
 export function contrastChecker(base: ColorValue, on: ColorValue): ContrastScoreCVD;
 export function contrastChecker(base: ColorValue, on: ColorValue, cvd: false): ContrastScore;
 export function contrastChecker(base: ColorValue, on: ColorValue, cvd?: boolean): ContrastScore | ContrastScoreCVD {
-  const result = toScore(Contrast.ratioOfTones(getTone(base), getTone(on)));
+  const result = toScore(Contrast.ratioOfTones(Color.getTone(base), Color.getTone(on)));
 
   if (cvd !== false) {
     // ... CVD simulation block ...
@@ -208,7 +208,7 @@ and the ratio is recomputed from the *simulated* tones (`color.ts:199-206`):
 for (const deficiency of DEFICIENCIES) {
   const simBase = simulateCVD(base, deficiency);
   const simOn = simulateCVD(on, deficiency);
-  simulations[deficiency] = toScore(Contrast.ratioOfTones(getTone(simBase), getTone(simOn)));
+  simulations[deficiency] = toScore(Contrast.ratioOfTones(Color.getTone(simBase), Color.getTone(simOn)));
 }
 ```
 

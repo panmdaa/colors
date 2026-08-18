@@ -112,13 +112,12 @@ differentiator (`README.md:483-489`):
 - **CSS generation.** `generateCSS` (`src/css-props.ts:19-30`) and
   `generateCSSSheet` (`src/css-sheet.ts:33-68`) turn a theme into custom
   properties or a light/dark stylesheet.
-- **Color editing ergonomics.** `getHue`/`setTone`/`lighten`/`mix`/`gradient`/
-  `onColor`/`harmonize`/`fixDisliked`/`fromImage` (`src/color.ts`, `src/gradient.ts`)
+- **Color editing ergonomics.** `Color.getHue`/`setTone`/`lighten`/`mix`/
+  `gradient`/`onColor`/`harmonize`/`fixDisliked`/`fromImage` (`src/color-class.ts`)
   wrap the science in a tiny, familiar API.
-- **New science.** `mix` circular-averages hue in HCT space (`src/color.ts:338-362`),
-  and `gradient` interpolates in HCT (`src/gradient.ts:16-33`). `onColor`
-  guarantees a >= 4.5:1 foreground at the same hue/chroma
-  (`src/color.ts:148-155`).
+- **New science.** `mix` circular-averages hue in HCT space
+  (`src/color-class.ts`), and `gradient` interpolates in HCT. `onColor`
+  guarantees a >= 4.5:1 foreground at the same hue/chroma.
 
 ## Why this beats using MCU directly
 

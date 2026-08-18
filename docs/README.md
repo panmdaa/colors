@@ -72,11 +72,11 @@ property generation, gradient interpolation, and image-based seed extraction.
 |-----|--------|
 | [api/overview](api/overview.md) | Map of the exported API surface |
 | [api/palette](api/palette.md) | `palette()` end-to-end theme generation |
-| [api/color-manipulation](api/color-manipulation.md) | Per-channel HCT editing, `mix`, `tone`, `onColor` |
+| [api/color-manipulation](api/color-manipulation.md) | The `Color` class: per-channel HCT editing, `mix`, `tone`, `onColor` |
 | [api/contrast](api/contrast.md) | Contrast scores, WCAG thresholds, scoring math |
 | [api/palette-checker](api/palette-checker.md) | `paletteChecker` and `report` audits |
 | [api/css-generation](api/css-generation.md) | `generateCSS` and `generateCSSSheet` |
-| [api/image](api/image.md) | `fromImage` seed extraction |
+| [api/image](api/image.md) | `Color.fromImage` seed extraction |
 
 ### Science & accessibility
 

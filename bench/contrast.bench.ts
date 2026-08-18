@@ -1,7 +1,6 @@
 import { bench, describe } from "vitest";
-import { palette, report } from "../src";
+import { palette, report, Color } from "../src";
 import { Contrast } from "../src/utils";
-import { getTone } from "../src";
 import { wcagContrast } from "culori";
 import chroma from "chroma-js";
 
@@ -24,8 +23,8 @@ const PAIRS = [
 
 describe("WCAG contrast ratio (single pair)", () => {
 	bench("@panmdaa/colors Contrast.ratioOfTones", () => {
-		const t1 = getTone("#000000");
-		const t2 = getTone("#ffffff");
+		const t1 = Color.getTone("#000000");
+		const t2 = Color.getTone("#ffffff");
 		Contrast.ratioOfTones(t1, t2);
 	});
 
@@ -41,8 +40,8 @@ describe("WCAG contrast ratio (single pair)", () => {
 describe("WCAG contrast — 14 pairs", () => {
 	bench("@panmdaa/colors 14 pairs", () => {
 		for (const [a, b] of PAIRS) {
-			const t1 = getTone(a);
-			const t2 = getTone(b);
+			const t1 = Color.getTone(a);
+			const t2 = Color.getTone(b);
 			Contrast.ratioOfTones(t1, t2);
 		}
 	});

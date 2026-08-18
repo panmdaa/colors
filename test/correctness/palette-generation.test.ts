@@ -1,6 +1,6 @@
 import { describe, it } from "vitest";
 import assert from "node:assert/strict";
-import { getChroma, getHue, getTone, palette } from "../../src/color";
+import { Color, palette } from "../../src/color";
 import { Contrast } from "../../src/utils";
 import type { Palette } from "../../src/types";
 import { approx } from "../helpers";
@@ -52,14 +52,14 @@ describe("color correctness — palette generation", () => {
 
 	it("light primary tone follows source color tone (tonal-spot)", () => {
 		const theme = palette("#6750a4", { variant: "tonal-spot" });
-		const tone = getTone(theme.light.primary);
+		const tone = Color.getTone(theme.light.primary);
 		assert.ok(tone > 0 && tone < 100,
 			`light primary tone: ${tone} (expected 0-100)`);
 	});
 
 	it("dark primary tone follows source color tone (tonal-spot)", () => {
 		const theme = palette("#6750a4", { variant: "tonal-spot" });
-		const tone = getTone(theme.dark.primary);
+		const tone = Color.getTone(theme.dark.primary);
 		assert.ok(tone > 0 && tone < 100,
 			`dark primary tone: ${tone} (expected 0-100)`);
 	});
@@ -98,8 +98,8 @@ describe("color correctness — palette generation", () => {
 	it("on-primary has sufficient contrast against primary (light)", () => {
 		const theme = palette("#6750a4", { variant: "tonal-spot" });
 		const ratio = Contrast.ratioOfTones(
-			getTone(theme.light["on-primary"]),
-			getTone(theme.light.primary),
+			Color.getTone(theme.light["on-primary"]),
+			Color.getTone(theme.light.primary),
 		);
 		assert.ok(ratio >= 4.0,
 			`light on-primary vs primary: ${ratio.toFixed(2)}:1`);
@@ -108,24 +108,24 @@ describe("color correctness — palette generation", () => {
 	it("on-primary has sufficient contrast against primary (dark)", () => {
 		const theme = palette("#6750a4", { variant: "tonal-spot" });
 		const ratio = Contrast.ratioOfTones(
-			getTone(theme.dark["on-primary"]),
-			getTone(theme.dark.primary),
+			Color.getTone(theme.dark["on-primary"]),
+			Color.getTone(theme.dark.primary),
 		);
 		assert.ok(ratio >= 4.0,
 			`dark on-primary vs primary: ${ratio.toFixed(2)}:1`);
 	});
 
 	it("primary hue approximates source hue for tonal-spot", () => {
-		const sourceHue = getHue("#6750a4");
+		const sourceHue = Color.getHue("#6750a4");
 		const theme = palette("#6750a4", { variant: "tonal-spot" });
-		assert.ok(approx(getHue(theme.light.primary), sourceHue, 5));
+		assert.ok(approx(Color.getHue(theme.light.primary), sourceHue, 5));
 	});
 
 	it("variants produce meaningfully different palettes", () => {
 		const mono = palette("#6750a4", { variant: "monochrome" }).light.primary;
 		const vibrant = palette("#6750a4", { variant: "vibrant" }).light.primary;
-		const chromaMono = getChroma(mono);
-		const chromaVibrant = getChroma(vibrant);
+		const chromaMono = Color.getChroma(mono);
+		const chromaVibrant = Color.getChroma(vibrant);
 		assert.ok(chromaVibrant > chromaMono,
 			`vibrant chroma (${chromaVibrant}) should exceed monochrome (${chromaMono})`);
 	});

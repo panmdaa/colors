@@ -73,7 +73,7 @@ implementations exist, and here is where:
 | Would-be dependency | What would be imported | Internal replacement |
 |---------------------|------------------------|----------------------|
 | `@material/material-color-utilities` | HCT, CAM16, DynamicColor, quantizers | `src/hct/` (Cam16, HctSolver, ViewingConditions), `src/scheme/`, `src/quantize/` |
-| `chroma-js` / `culori` | color parsing, conversions, interpolation | `src/utils/color.ts` (ARGB↔XYZ↔Lab↔L*), `src/utils/string.ts` (hex parsing), `src/gradient.ts`, `src/color.ts` `mix` |
+| `chroma-js` / `culori` | color parsing, conversions, interpolation | `src/utils/color.ts` (ARGB↔XYZ↔Lab↔L*), `src/utils/string.ts` (hex parsing), `src/color-class.ts` (`mix`, `gradient`) |
 | WCAG contrast libs | `wcagContrast` (culori) or `chroma.contrast()` | `src/utils/contrast.ts` (`ratioOfTones`, `lighter`, `darker`) |
 | color-blindness libs | CVD simulation | `src/science/color-blindness.ts` — Machado matrices inlined (`src/science/color-blindness.ts:25-63`) |
 | image quantization | — | `src/quantize/` (Wu, Wsmeans, Celebi) |

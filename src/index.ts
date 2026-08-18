@@ -10,6 +10,7 @@
  */
 
 export * from './color';
+export * from './color-class';
 export * from './css-props';
 export * from './css-sheet';
 export * from './report';

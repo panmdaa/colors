@@ -9,153 +9,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { argbFromHex, hexFromArgb, clampDouble, Contrast } from "./utils";
-import { sourceColorFromImage, Blend, DislikeAnalyzer, simulateCVD } from "./science";
+import { hexFromArgb, Contrast } from "./utils";
+import { simulateCVD } from "./science";
 import { DynamicScheme, Variant as InternalVariant } from "./scheme";
-import { Hct } from "./hct";
+import { Color } from "./color-class";
+export { Color } from "./color-class";
 
-import type { ColorValue, Palette, Theme, Tones, Variant, CustomTokenOptions, ContrastScore, ContrastScoreCVD, ColorVisionDeficiency, CVDSeverity, PaletteCheckerPair, PaletteCheckerResult, PaletteCheckerMode, PaletteCheckerSimulation } from "./types";
+import type { ColorValue, Palette, Theme, Variant, CustomTokenOptions, ContrastScore, ContrastScoreCVD, ColorVisionDeficiency, CVDSeverity, PaletteCheckerPair, PaletteCheckerResult, PaletteCheckerMode, PaletteCheckerSimulation } from "./types";
 import { resolveCustomTokens } from "./extend-theme";
-export { gradient } from "./gradient";
 export { simulateCVD, simulateAllCVD } from "./science";
 export type { ColorVisionDeficiency, CVDSeverity, ContrastScoreCVD, PaletteCheckerPair, PaletteCheckerResult, PaletteCheckerMode, PaletteCheckerSimulation, PaletteModeSummary } from "./types";
 
-export function toNumber(color: ColorValue): number {
-	return argbFromHex(color);
-}
-
-export function fromNumber(color: number): ColorValue {
-	return hexFromArgb(color) as ColorValue;
-}
-
-export function fromImage(image: HTMLImageElement): Promise<ColorValue> {
-	return sourceColorFromImage(image).then((n) => fromNumber(n!));
-}
-
-export function hct(color: ColorValue) {
-	return Hct.fromInt(toNumber(color));
-}
-
-export function fromHct(
-	hue: number,
-	chroma: number,
-	tone: number,
-): ColorValue {
-	return fromNumber(Hct.from(hue, chroma, tone).toInt());
-}
-
-export function getHue(color: ColorValue): number {
-	return hct(color).hue;
-}
-
-export function getChroma(color: ColorValue): number {
-	return hct(color).chroma;
-}
-
-export function getTone(color: ColorValue): number {
-	return hct(color).tone;
-}
-
-export function setHue(color: ColorValue, hue: number): ColorValue {
-	const c = hct(color);
-	c.hue = hue;
-	return fromNumber(c.toInt());
-}
-
-export function setChroma(color: ColorValue, chroma: number): ColorValue {
-	const c = hct(color);
-	c.chroma = chroma;
-	return fromNumber(c.toInt());
-}
-
-export function setTone(color: ColorValue, tone: number): ColorValue {
-	const c = hct(color);
-	c.tone = tone;
-	return fromNumber(c.toInt());
-}
-
-export function rotateHue(color: ColorValue, degrees: number): ColorValue {
-	const c = hct(color);
-	c.hue = (c.hue + degrees + 360) % 360;
-	return fromNumber(c.toInt());
-}
-
-export function lighten(color: ColorValue, amount: number): ColorValue {
-	const c = hct(color);
-	c.tone = Math.min(100, c.tone + amount);
-	return fromNumber(c.toInt());
-}
-
-export function darken(color: ColorValue, amount: number): ColorValue {
-	const c = hct(color);
-	c.tone = Math.max(0, c.tone - amount);
-	return fromNumber(c.toInt());
-}
-
-export function saturate(color: ColorValue, amount: number): ColorValue {
-	const c = hct(color);
-	c.chroma = Math.max(0, c.chroma + amount);
-	return fromNumber(c.toInt());
-}
-
-export function desaturate(color: ColorValue, amount: number): ColorValue {
-	const c = hct(color);
-	c.chroma = Math.max(0, c.chroma - amount);
-	return fromNumber(c.toInt());
-}
-
-export function edit(
-	color: ColorValue,
-	options: { hue?: number; chroma?: number; tone?: number },
-): ColorValue {
-	const c = hct(color);
-	if (options.hue !== undefined) c.hue = options.hue;
-	if (options.chroma !== undefined) c.chroma = options.chroma;
-	if (options.tone !== undefined) c.tone = options.tone;
-	return fromNumber(c.toInt());
-}
-
-export function harmonize(
-	design: ColorValue,
-	source: ColorValue,
-): ColorValue {
-	return fromNumber(Blend.harmonize(toNumber(design), toNumber(source)));
-}
-
-export function fixDisliked(color: ColorValue): ColorValue {
-	return fromNumber(DislikeAnalyzer.fixIfDisliked(hct(color)).toInt());
-}
-
-export function isDisliked(color: ColorValue): boolean {
-	return DislikeAnalyzer.isDisliked(hct(color));
-}
-
-export function tones(color: ColorValue): Record<Tones, ColorValue> {
-	const c = hct(color);
-	const toneValues: Tones[] = [
-		0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 98, 99, 100,
-	];
-	return Object.fromEntries(
-		toneValues.map((t) => [t, fromHct(c.hue, c.chroma, t)]),
-	) as Record<Tones, ColorValue>;
-}
-
-export function tone(color: ColorValue, tone: number): ColorValue {
-	const c = hct(color);
-	return fromHct(c.hue, c.chroma, tone);
-}
-
-export function onColor(bg: ColorValue, ratio = 4.5): ColorValue {
-	const c = hct(bg);
-	const fgTone =
-		c.tone >= 55
-			? Contrast.darkerUnsafe(c.tone, ratio)
-			: Contrast.lighterUnsafe(c.tone, ratio);
-	return fromHct(c.hue, c.chroma, fgTone);
-}
-
-export function underColor(fg: ColorValue, ratio = 4.5): ColorValue {
-	return onColor(fg, ratio);
+function toHex(argb: number): ColorValue {
+	return hexFromArgb(argb) as ColorValue;
 }
 
 function mapRange(value: number, fromMin: number, fromMax: number, toMin: number, toMax: number): number {
@@ -194,14 +60,14 @@ const DEFICIENCIES: ColorVisionDeficiency[] = ["protanopia", "deuteranopia", "tr
 export function contrastChecker(base: ColorValue, on: ColorValue): ContrastScoreCVD;
 export function contrastChecker(base: ColorValue, on: ColorValue, cvd: false): ContrastScore;
 export function contrastChecker(base: ColorValue, on: ColorValue, cvd?: boolean): ContrastScore | ContrastScoreCVD {
-	const result = toScore(Contrast.ratioOfTones(getTone(base), getTone(on)));
+	const result = toScore(Contrast.ratioOfTones(Color.getTone(base), Color.getTone(on)));
 
 	if (cvd !== false) {
 		const simulations = {} as Record<ColorVisionDeficiency, ContrastScore>;
 		for (const deficiency of DEFICIENCIES) {
 			const simBase = simulateCVD(base, deficiency);
 			const simOn = simulateCVD(on, deficiency);
-			simulations[deficiency] = toScore(Contrast.ratioOfTones(getTone(simBase), getTone(simOn)));
+			simulations[deficiency] = toScore(Contrast.ratioOfTones(Color.getTone(simBase), Color.getTone(simOn)));
 		}
 		return { ...result, simulations } as ContrastScoreCVD;
 	}
@@ -216,7 +82,7 @@ function buildSimulation(
 ): PaletteCheckerSimulation {
 	const simBase = simulateCVD(base, deficiency);
 	const simOn = simulateCVD(on, deficiency);
-	const simRatio = Contrast.ratioOfTones(getTone(simBase), getTone(simOn));
+	const simRatio = Contrast.ratioOfTones(Color.getTone(simBase), Color.getTone(simOn));
 	return {
 		base: simBase,
 		on: simOn,
@@ -243,7 +109,7 @@ function scanPairs(
 			handled.add(onRole);
 			const base = palette[role]!;
 			const on = palette[onRole]!;
-			const ratio = Contrast.ratioOfTones(getTone(base), getTone(on));
+			const ratio = Contrast.ratioOfTones(Color.getTone(base), Color.getTone(on));
 			const score = toScore(ratio);
 			const AA = ratio >= 4.5;
 			const AALarge = ratio >= 3.0;
@@ -335,32 +201,6 @@ export function paletteChecker(
 	return scanPairs(input as Record<string, ColorValue>, cvd !== false);
 }
 
-export function mix(...colors: [ColorValue, ...ColorValue[]]): ColorValue {
-	if (colors.length === 1) return colors[0];
-
-	const hcts = colors.map((c) => hct(c));
-	const n = hcts.length;
-
-	let sinSum = 0;
-	let cosSum = 0;
-	let chromaSum = 0;
-	let toneSum = 0;
-
-	for (const c of hcts) {
-		const rad = (c.hue * Math.PI) / 180;
-		sinSum += Math.sin(rad);
-		cosSum += Math.cos(rad);
-		chromaSum += c.chroma;
-		toneSum += c.tone;
-	}
-
-	const avgHue = ((Math.atan2(sinSum / n, cosSum / n) * 180) / Math.PI + 360) % 360;
-	const avgChroma = Math.max(0, chromaSum / n);
-	const avgTone = Math.max(0, Math.min(100, toneSum / n));
-
-	return fromHct(avgHue, avgChroma, avgTone);
-}
-
 export type ExtraPalette<T extends Record<string, ColorValue | CustomTokenOptions>> = {
 	[K in keyof T & string]: ColorValue;
 } & {
@@ -378,7 +218,7 @@ export function palette<
 } {
 	const variant = options?.variant ?? "expressive";
 	const contrastLevel = options?.contrastLevel ?? 0;
-	const source = Hct.fromInt(toNumber(color));
+	const source = Color.hct(color);
 	const internalVariant = toInternalVariant(variant);
 	const light = generateColorPalette(source, internalVariant, false, contrastLevel);
 	const dark = generateColorPalette(source, internalVariant, true, contrastLevel);
@@ -418,7 +258,7 @@ function toInternalVariant(variant: Variant): InternalVariant {
 }
 
 function generateColorPalette(
-	source: Hct,
+	source: ReturnType<typeof Color.hct>,
 	variant: InternalVariant,
 	dark: boolean,
 	contrastLevel: number,
@@ -431,58 +271,58 @@ function generateColorPalette(
 	});
 
 	return {
-		primary: fromNumber(scheme.primary),
-		"primary-dim": fromNumber(scheme.primaryDim),
-		"on-primary": fromNumber(scheme.onPrimary),
-		"primary-container": fromNumber(scheme.primaryContainer),
-		"on-primary-container": fromNumber(scheme.onPrimaryContainer),
-		"primary-fixed": fromNumber(scheme.primaryFixed),
-		"primary-fixed-dim": fromNumber(scheme.primaryFixedDim),
-		"on-primary-fixed": fromNumber(scheme.onPrimaryFixed),
-		"on-primary-fixed-variant": fromNumber(scheme.onPrimaryFixedVariant),
-		secondary: fromNumber(scheme.secondary),
-		"secondary-dim": fromNumber(scheme.secondaryDim),
-		"on-secondary": fromNumber(scheme.onSecondary),
-		"secondary-container": fromNumber(scheme.secondaryContainer),
-		"on-secondary-container": fromNumber(scheme.onSecondaryContainer),
-		"secondary-fixed": fromNumber(scheme.secondaryFixed),
-		"secondary-fixed-dim": fromNumber(scheme.secondaryFixedDim),
-		"on-secondary-fixed": fromNumber(scheme.onSecondaryFixed),
-		"on-secondary-fixed-variant": fromNumber(scheme.onSecondaryFixedVariant),
-		tertiary: fromNumber(scheme.tertiary),
-		"tertiary-dim": fromNumber(scheme.tertiaryDim),
-		"on-tertiary": fromNumber(scheme.onTertiary),
-		"tertiary-container": fromNumber(scheme.tertiaryContainer),
-		"on-tertiary-container": fromNumber(scheme.onTertiaryContainer),
-		"tertiary-fixed": fromNumber(scheme.tertiaryFixed),
-		"tertiary-fixed-dim": fromNumber(scheme.tertiaryFixedDim),
-		"on-tertiary-fixed": fromNumber(scheme.onTertiaryFixed),
-		"on-tertiary-fixed-variant": fromNumber(scheme.onTertiaryFixedVariant),
-		error: fromNumber(scheme.error),
-		"error-dim": fromNumber(scheme.errorDim),
-		"on-error": fromNumber(scheme.onError),
-		"error-container": fromNumber(scheme.errorContainer),
-		"on-error-container": fromNumber(scheme.onErrorContainer),
-		background: fromNumber(scheme.background),
-		"on-background": fromNumber(scheme.onBackground),
-		surface: fromNumber(scheme.surface),
-		"surface-dim": fromNumber(scheme.surfaceDim),
-		"surface-bright": fromNumber(scheme.surfaceBright),
-		"surface-container-lowest": fromNumber(scheme.surfaceContainerLowest),
-		"surface-container-low": fromNumber(scheme.surfaceContainerLow),
-		"surface-container": fromNumber(scheme.surfaceContainer),
-		"surface-container-high": fromNumber(scheme.surfaceContainerHigh),
-		"surface-container-highest": fromNumber(scheme.surfaceContainerHighest),
-		"surface-variant": fromNumber(scheme.surfaceVariant),
-		"on-surface": fromNumber(scheme.onSurface),
-		"on-surface-variant": fromNumber(scheme.onSurfaceVariant),
-		outline: fromNumber(scheme.outline),
-		"outline-variant": fromNumber(scheme.outlineVariant),
-		shadow: fromNumber(scheme.shadow),
-		scrim: fromNumber(scheme.scrim),
-		"surface-tint": fromNumber(scheme.surfaceTint),
-		"inverse-surface": fromNumber(scheme.inverseSurface),
-		"inverse-on-surface": fromNumber(scheme.inverseOnSurface),
-		"inverse-primary": fromNumber(scheme.inversePrimary),
+		primary: toHex(scheme.primary),
+		"primary-dim": toHex(scheme.primaryDim),
+		"on-primary": toHex(scheme.onPrimary),
+		"primary-container": toHex(scheme.primaryContainer),
+		"on-primary-container": toHex(scheme.onPrimaryContainer),
+		"primary-fixed": toHex(scheme.primaryFixed),
+		"primary-fixed-dim": toHex(scheme.primaryFixedDim),
+		"on-primary-fixed": toHex(scheme.onPrimaryFixed),
+		"on-primary-fixed-variant": toHex(scheme.onPrimaryFixedVariant),
+		secondary: toHex(scheme.secondary),
+		"secondary-dim": toHex(scheme.secondaryDim),
+		"on-secondary": toHex(scheme.onSecondary),
+		"secondary-container": toHex(scheme.secondaryContainer),
+		"on-secondary-container": toHex(scheme.onSecondaryContainer),
+		"secondary-fixed": toHex(scheme.secondaryFixed),
+		"secondary-fixed-dim": toHex(scheme.secondaryFixedDim),
+		"on-secondary-fixed": toHex(scheme.onSecondaryFixed),
+		"on-secondary-fixed-variant": toHex(scheme.onSecondaryFixedVariant),
+		tertiary: toHex(scheme.tertiary),
+		"tertiary-dim": toHex(scheme.tertiaryDim),
+		"on-tertiary": toHex(scheme.onTertiary),
+		"tertiary-container": toHex(scheme.tertiaryContainer),
+		"on-tertiary-container": toHex(scheme.onTertiaryContainer),
+		"tertiary-fixed": toHex(scheme.tertiaryFixed),
+		"tertiary-fixed-dim": toHex(scheme.tertiaryFixedDim),
+		"on-tertiary-fixed": toHex(scheme.onTertiaryFixed),
+		"on-tertiary-fixed-variant": toHex(scheme.onTertiaryFixedVariant),
+		error: toHex(scheme.error),
+		"error-dim": toHex(scheme.errorDim),
+		"on-error": toHex(scheme.onError),
+		"error-container": toHex(scheme.errorContainer),
+		"on-error-container": toHex(scheme.onErrorContainer),
+		background: toHex(scheme.background),
+		"on-background": toHex(scheme.onBackground),
+		surface: toHex(scheme.surface),
+		"surface-dim": toHex(scheme.surfaceDim),
+		"surface-bright": toHex(scheme.surfaceBright),
+		"surface-container-lowest": toHex(scheme.surfaceContainerLowest),
+		"surface-container-low": toHex(scheme.surfaceContainerLow),
+		"surface-container": toHex(scheme.surfaceContainer),
+		"surface-container-high": toHex(scheme.surfaceContainerHigh),
+		"surface-container-highest": toHex(scheme.surfaceContainerHighest),
+		"surface-variant": toHex(scheme.surfaceVariant),
+		"on-surface": toHex(scheme.onSurface),
+		"on-surface-variant": toHex(scheme.onSurfaceVariant),
+		outline: toHex(scheme.outline),
+		"outline-variant": toHex(scheme.outlineVariant),
+		shadow: toHex(scheme.shadow),
+		scrim: toHex(scheme.scrim),
+		"surface-tint": toHex(scheme.surfaceTint),
+		"inverse-surface": toHex(scheme.inverseSurface),
+		"inverse-on-surface": toHex(scheme.inverseOnSurface),
+		"inverse-primary": toHex(scheme.inversePrimary),
 	};
 }

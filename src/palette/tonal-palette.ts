@@ -12,6 +12,16 @@
 import { Hct } from '../hct';
 
 /**
+ * Module-level cache of TonalPalette instances.
+ *
+ * A TonalPalette is immutable and depends only on its hue, chroma and key
+ * color, so identical inputs can safely share one instance. Light and dark
+ * schemes of a theme use the same palettes for most variants, and repeated
+ * palette() calls reuse the cached tone solutions entirely.
+ */
+const paletteCache = new Map<string, TonalPalette>();
+
+/**
  *  A convenience class for retrieving colors that are constant in hue and
  *  chroma, but vary in tone.
  */
@@ -32,7 +42,12 @@ export class TonalPalette {
 	 * @return Tones matching that color's hue and chroma.
 	 */
 	static fromHct(hct: Hct) {
-		return new TonalPalette(hct.hue, hct.chroma, hct);
+		const key = String(hct.toInt());
+		const cached = paletteCache.get(key);
+		if (cached !== undefined) return cached;
+		const palette = new TonalPalette(hct.hue, hct.chroma, hct);
+		paletteCache.set(key, palette);
+		return palette;
 	}
 
 	/**
@@ -41,8 +56,13 @@ export class TonalPalette {
 	 * @return Tones matching hue and chroma.
 	 */
 	static fromHueAndChroma(hue: number, chroma: number): TonalPalette {
+		const key = `${hue}|${chroma}`;
+		const cached = paletteCache.get(key);
+		if (cached !== undefined) return cached;
 		const keyColor = new KeyColor(hue, chroma).create();
-		return new TonalPalette(hue, chroma, keyColor);
+		const palette = new TonalPalette(hue, chroma, keyColor);
+		paletteCache.set(key, palette);
+		return palette;
 	}
 
 	private constructor(

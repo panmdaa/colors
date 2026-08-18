@@ -1,5 +1,5 @@
 import { bench, describe } from "vitest";
-import { gradient } from "../src";
+import { Color } from "../src";
 import { interpolate, samples } from "culori";
 import chroma from "chroma-js";
 
@@ -8,8 +8,8 @@ const TO = "#0000ff";
 const COUNT = 10;
 
 describe("gradient — HCT interpolation, 10 steps", () => {
-	bench("@panmdaa/colors gradient()", () => {
-		gradient(FROM, TO, COUNT);
+	bench("@panmdaa/colors Color.gradient()", () => {
+		Color.gradient(FROM, TO, COUNT);
 	});
 
 	bench("culori interpolate() lch", () => {
@@ -28,8 +28,8 @@ describe("gradient — HCT interpolation, 10 steps", () => {
 });
 
 describe("gradient — 100 steps", () => {
-	bench("@panmdaa/colors gradient() 100", () => {
-		gradient(FROM, TO, 100);
+	bench("@panmdaa/colors Color.gradient() 100", () => {
+		Color.gradient(FROM, TO, 100);
 	});
 
 	bench("culori interpolate() lch 100", () => {
@@ -46,8 +46,8 @@ describe("gradient — 20 steps, warm to cool", () => {
 	const warm = "#ff8800";
 	const cool = "#2e5cb8";
 
-	bench("@panmdaa/colors gradient() warm→cool", () => {
-		gradient(warm, cool, 20);
+	bench("@panmdaa/colors Color.gradient() warm→cool", () => {
+		Color.gradient(warm, cool, 20);
 	});
 
 	bench("culori interpolate() lch warm→cool", () => {

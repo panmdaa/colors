@@ -35,7 +35,7 @@ and produces a 53-role light/dark theme:
 
 ```
 seed hex
-   │  toNumber(color)                    ── src/color.ts:23-25
+   │  Color.toNumber(color)               ── src/color-class.ts
    ▼
 ARGB int
    │  Hct.fromInt(argb)                  ── src/hct/hct.ts:65-67

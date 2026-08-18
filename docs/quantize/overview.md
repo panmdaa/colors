@@ -14,7 +14,7 @@
 
 The quantization layer lives in `src/quantize/` and answers one question: given
 an arbitrary photograph, which handful of colors actually represent it? It is
-the front door of `fromImage` (`src/color.ts:31`), the API that turns an
+the front door of `Color.fromImage` (`src/color-class.ts`), the API that turns an
 `HTMLImageElement` into a seed color for theme generation.
 
 The layer is deliberately *statistical* rather than perceptual in its first
@@ -148,7 +148,7 @@ Score.score(map)                               ── rank + curate
 first ranked color → seed for palette()
 ```
 
-`fromImage` (`src/color.ts:31`) hides this entire chain behind a one-line
+`Color.fromImage` (`src/color-class.ts`) hides this entire chain behind a one-line
 promise.
 
 ## Module layout

@@ -10,7 +10,7 @@
 */
 
 import { Contrast } from "./utils";
-import { getTone } from "./color";
+import { Color } from "./color-class";
 import type { ColorValue } from "./types";
 
 export interface ContrastPair {
@@ -37,7 +37,7 @@ function checkPair(bg: ColorValue, fg: ColorValue): {
 	AALarge: boolean;
 	AAA: boolean;
 } {
-	const ratio = Contrast.ratioOfTones(getTone(bg), getTone(fg));
+	const ratio = Contrast.ratioOfTones(Color.getTone(bg), Color.getTone(fg));
 	return {
 		ratio,
 		AA: ratio >= 4.5,

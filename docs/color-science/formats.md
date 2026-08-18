@@ -171,31 +171,20 @@ final producer of channel values; the solver's version is an internal probe.
 
 ## The public entry points
 
-The facade in `src/color.ts` binds these conversions to the public `ColorValue`
-type, which is the hex-string world:
+The `Color` class in `src/color-class.ts` binds these conversions to the public
+`ColorValue` type, which is the hex-string world:
 
 ```ts
-export function toNumber(color: ColorValue): number {
-    return argbFromHex(color);          // src/color.ts:23-25
-}
-
-export function fromNumber(color: number): ColorValue {
-    return hexFromArgb(color) as ColorValue;   // src/color.ts:27-29
-}
-
-export function hct(color: ColorValue) {
-    return Hct.fromInt(toNumber(color));  // src/color.ts:35-37
-}
-
-export function fromHct(hue: number, chroma: number, tone: number): ColorValue {
-    return fromNumber(Hct.from(hue, chroma, tone).toInt());  // src/color.ts:39-45
-}
+Color.toNumber(color);              // argbFromHex(color) — hex → ARGB int
+Color.fromNumber(n).hex;            // hexFromArgb(n) — ARGB int → hex
+Color.hct(color);                   // Hct.fromInt(Color.toNumber(color))
+Color.fromHct(h, c, t).hex;         // Hct.from(h, c, t).toInt() → hex
 ```
 
 `toNumber` / `fromNumber` are the normalization point of the whole API: every
-public function that takes a hex string starts with `toNumber`, and every
-function that returns a color ends with `fromNumber`. `palette()`
-(`src/color.ts:381`) and every color-manipulation helper (`setHue`, `lighten`,
+public function that takes a hex string starts with `Color.toNumber`, and every
+function that returns a color ends with `Color.fromNumber`. `palette()`
+and every color-manipulation helper (`setHue`, `lighten`,
 `mix`, `onColor`, ...) route through exactly these two lines, which is why the
 whole library can be opaque-only and hex-in/hex-out at the boundary.
 

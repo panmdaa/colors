@@ -70,6 +70,7 @@ interface FromPaletteOptions {
  */
 export class DynamicColor {
 	private readonly hctCache = new Map<DynamicScheme, Hct>();
+	private readonly toneCache = new Map<DynamicScheme, number>();
 
 	/**
 	 * Create a DynamicColor defined by a TonalPalette and HCT tone.
@@ -184,6 +185,7 @@ export class DynamicColor {
 	 */
 	clearCache() {
 		this.hctCache.clear();
+		this.toneCache.clear();
 	}
 
 	/**
@@ -227,7 +229,16 @@ export class DynamicColor {
 	 *     contrast level is.
 	 */
 	getTone(scheme: DynamicScheme): number {
-		return getSpec().getTone(scheme, this);
+		const cachedAnswer = this.toneCache.get(scheme);
+		if (cachedAnswer !== undefined) {
+			return cachedAnswer;
+		}
+		const answer = getSpec().getTone(scheme, this);
+		if (this.toneCache.size > 4) {
+			this.toneCache.clear();
+		}
+		this.toneCache.set(scheme, answer);
+		return answer;
 	}
 
 	/**

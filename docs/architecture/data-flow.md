@@ -36,7 +36,7 @@ palette("#744c9d", { variant: "expressive", extraColors })
         │       ▼
         │  53 ARGB integers
         ▼
-   color.ts:433-487   fromNumber() each → 53 hex strings → light Palette
+   generateColorPalette   Color.fromNumber().hex each → 53 hex strings → light Palette
         │
    color.ts:384   same for isDark=true → dark Palette
         │
@@ -53,8 +53,8 @@ hex strings internally; everything downstream uses ARGB 32-bit integers and the
 HCT class.
 
 ```ts
-// src/color.ts:381
-const source = Hct.fromInt(toNumber(color));
+// src/color.ts
+const source = Hct.fromInt(Color.toNumber(color));
 ```
 
 - `toNumber` (`src/color.ts:23-25`) calls `argbFromHex` (`src/utils/string.ts:44-70`),
@@ -137,10 +137,9 @@ the registry that knows every role's `DynamicColor`.
 each ARGB result into a plain object keyed by the kebab-case role name:
 
 ```ts
-// src/color.ts:434
-"primary": fromNumber(scheme.primary),
-"primary-dim": fromNumber(scheme.primaryDim),
-"on-primary": fromNumber(scheme.onPrimary),
+"primary": Color.fromNumber(scheme.primary).hex,
+"primary-dim": Color.fromNumber(scheme.primaryDim).hex,
+"on-primary": Color.fromNumber(scheme.onPrimary).hex,
 // ... 50 more
 ```
 
@@ -248,13 +247,13 @@ encodes a real design finding — tones below 60 prefer light foregrounds — an
 
 ## The fromImage path: image → quantize → score → palette
 
-`fromImage(image)` (`src/color.ts:31-33`) is the only async entry point. It
-reduces an image to a single dominant color, then hands it to the same
+`Color.fromImage(image)` (`src/color-class.ts`) is the only async entry point.
+It reduces an image to a single dominant color, then hands it to the same
 `palette` pipeline described above.
 
 ```
-fromImage(img)
-   color.ts:31-33   → sourceColorFromImage(img).then(fromNumber)
+Color.fromImage(img)
+   color-class.ts     → sourceColorFromImage(img).then(Color.from)
         │
    science/image.ts:23-58   draws to a <canvas>, reads RGBA pixels
         │

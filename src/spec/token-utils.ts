@@ -16,6 +16,15 @@ import { Variant } from '../scheme/variant';
 import type { TonalPalette } from '../palette';
 import { clampDouble } from '../utils';
 
+/**
+ * Memoizes findBestToneForChroma results.
+ *
+ * The scan walks tone-by-tone calling Hct.from() (one solver solve each), so
+ * it dominates theme-generation cost. The result depends only on its numeric
+ * inputs, so it is safe to cache per unique argument tuple across calls.
+ */
+const bestToneCache = new Map<string, number>();
+
 export function isFidelity(scheme: DynamicScheme): boolean {
 	return scheme.variant === Variant.FIDELITY || scheme.variant === Variant.CONTENT;
 }
@@ -63,6 +72,10 @@ export function findBestToneForChroma(
 	tone: number,
 	byDecreasingTone: boolean
 ): number {
+	const key = `${hue}|${chroma}|${tone}|${byDecreasingTone}`;
+	const cached = bestToneCache.get(key);
+	if (cached !== undefined) return cached;
+
 	let answer = tone;
 	let bestCandidate = Hct.from(hue, chroma, answer);
 	while (bestCandidate.chroma < chroma) {
@@ -77,6 +90,7 @@ export function findBestToneForChroma(
 		}
 	}
 
+	bestToneCache.set(key, answer);
 	return answer;
 }
 

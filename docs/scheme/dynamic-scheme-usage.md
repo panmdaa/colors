@@ -64,17 +64,17 @@ configuring: the 53 role accessors are already wired through `ColorRoles`
 ## The role accessors -> Palette map
 
 The function then reads every role accessor on the scheme and converts the ARGB
-integer to a hex string via `fromNumber` (an alias for `hexFromArgb`,
-`color.ts:27-29`). The return object keys are the public kebab-case token names
-(`color.ts:433-487`):
+integer to a hex string via `Color.fromNumber(...).hex` (an alias for
+`hexFromArgb`, `color-class.ts`). The return object keys are the public
+kebab-case token names (`color.ts`):
 
 ```ts
 return {
-  primary: fromNumber(scheme.primary),
-  "primary-dim": fromNumber(scheme.primaryDim),
-  "on-primary": fromNumber(scheme.onPrimary),
-  "primary-container": fromNumber(scheme.primaryContainer),
-  "on-primary-container": fromNumber(scheme.onPrimaryContainer),
+  primary: Color.fromNumber(scheme.primary).hex,
+  "primary-dim": Color.fromNumber(scheme.primaryDim).hex,
+  "on-primary": Color.fromNumber(scheme.onPrimary).hex,
+  "primary-container": Color.fromNumber(scheme.primaryContainer).hex,
+  "on-primary-container": Color.fromNumber(scheme.onPrimaryContainer).hex,
   // ... 49 more roles
 };
 ```

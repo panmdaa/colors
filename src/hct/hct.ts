@@ -25,7 +25,7 @@
  * and a difference of 50 guarantees a contrast ratio >= 4.5.
  */
 
-import { lstarFromArgb, lstarFromY } from '../utils';
+import { lstarFromY } from '../utils';
 
 import { Cam16 } from './cam16';
 import { HctSolver } from './hct-solver';
@@ -136,18 +136,18 @@ export class Hct {
 	}
 
 	private constructor(private argb: number) {
-		const cam = Cam16.fromInt(argb);
-		this.internalHue = cam.hue;
-		this.internalChroma = cam.chroma;
-		this.internalTone = lstarFromArgb(argb);
+		const { hue, chroma, y } = Cam16.hctFromArgb(argb);
+		this.internalHue = hue;
+		this.internalChroma = chroma;
+		this.internalTone = lstarFromY(y);
 		this.argb = argb;
 	}
 
 	private setInternalState(argb: number) {
-		const cam = Cam16.fromInt(argb);
-		this.internalHue = cam.hue;
-		this.internalChroma = cam.chroma;
-		this.internalTone = lstarFromArgb(argb);
+		const { hue, chroma, y } = Cam16.hctFromArgb(argb);
+		this.internalHue = hue;
+		this.internalChroma = chroma;
+		this.internalTone = lstarFromY(y);
 		this.argb = argb;
 	}
 

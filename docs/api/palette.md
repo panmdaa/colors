@@ -102,12 +102,11 @@ automatically (`extend-theme.ts:144-152`).
 ### 1. Seed color to HCT
 
 ```ts
-const source = Hct.fromInt(toNumber(color));   // color.ts:381
+const source = Hct.fromInt(Color.toNumber(color));
 ```
 
-The hex seed is converted to an ARGB integer (`toNumber`, `color.ts:23`) and
-then to an `Hct` object — the HCT color space that the whole scheme pipeline is
-built on.
+The hex seed is converted to an ARGB integer (`Color.toNumber`) and then to an
+`Hct` object — the HCT color space that the whole scheme pipeline is built on.
 
 ### 2. Variant mapping
 
@@ -143,15 +142,15 @@ integer using those palettes.
 
 ### 4. The 53 role accessors
 
-`generateColorPalette` then maps every role accessor through `fromNumber` into
-the `Palette` object (`color.ts:433-487`):
+`generateColorPalette` then maps every role accessor through `Color.fromNumber`
+into the `Palette` object (`color.ts`):
 
 ```ts
 return {
-  primary: fromNumber(scheme.primary),
-  "primary-dim": fromNumber(scheme.primaryDim),
-  "on-primary": fromNumber(scheme.onPrimary),
-  "primary-container": fromNumber(scheme.primaryContainer),
+  primary: Color.fromNumber(scheme.primary).hex,
+  "primary-dim": Color.fromNumber(scheme.primaryDim).hex,
+  "on-primary": Color.fromNumber(scheme.onPrimary).hex,
+  "primary-container": Color.fromNumber(scheme.primaryContainer).hex,
   // ... 49 more role tokens
 };
 ```

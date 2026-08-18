@@ -149,10 +149,10 @@ Key behaviour:
 Standalone HCT interpolation or inline in your palette:
 
 ```ts
-import { gradient } from "@panmdaa/colors";
+import { Color } from "@panmdaa/colors";
 
 // 5-step gradient from red to blue
-const steps = gradient("#ff0000", "#0000ff", 5);
+const steps = Color.gradient("#ff0000", "#0000ff", 5);
 steps[0]; // "#ff0000"
 steps[2]; // midpoint (interpolated in HCT space)
 steps[4]; // "#0000ff"
@@ -336,106 +336,124 @@ The simulation uses the **Machado (2009) physiologically-based model** with matr
 
 ## Color manipulation
 
-Edit a color's HCT channels independently:
+Everything is available through the immutable, lazily-evaluated `Color` class.
+The hex string is parsed at most once, and the expensive CAM16 forward pass and
+inverse solve run only when the result is actually needed — so reading channels
+repeatedly, or chaining edits without materializing, stays cheap.
+
+All operations are available both as **static methods** (operating on a string or
+number) and as **instance methods** (operating on a `Color`):
 
 ```ts
-import {
-  getHue, getChroma, getTone,
-  setHue, setChroma, setTone,
-  rotateHue, lighten, darken,
-  saturate, desaturate, edit,
-  tone, tones,
-} from "@panmdaa/colors";
+import { Color } from "@panmdaa/colors";
 
-// Per-channel getters
-getHue("#744c9d");     // 283
-getChroma("#744c9d");  // 36
-getTone("#744c9d");    // 62
+// Constructors
+const c = Color.from("#744c9d");   // hex string
+Color.from(0x744c9d);              // ARGB integer
+Color.fromHex("#744c9d");
+Color.fromArgb(0x744c9d);
+Color.fromHct(283, 36, 62);        // deferred solve — HCT values read instantly
 
-// Per-channel setters (returns new color)
-setHue("#744c9d", 200);     // shift hue
-setChroma("#744c9d", 50);   // increase saturation
-setTone("#744c9d", 80);     // lighten
+// Read channels (computed once, then cached)
+c.hue;      // 283
+c.chroma;   // 36
+c.tone;     // 62
+Color.getHue("#744c9d");     // 283
+Color.getChroma("#744c9d");  // 36
+Color.getTone("#744c9d");    // 62
 
-// Convenience functions
-lighten("#744c9d", 10);     // +10 tone
-darken("#744c9d", 10);      // -10 tone
-saturate("#744c9d", 20);    // +20 chroma
-desaturate("#744c9d", 20);  // -20 chroma
-rotateHue("#744c9d", 90);   // +90 hue
-
-// Batch edit
-edit("#744c9d", { hue: 200, chroma: 40, tone: 70 });
+// Mutations return new Colors; the receiver never changes
+c.lighten(10).saturate(20).rotateHue(45);  // chain freely
+c.setHue(200).setChroma(50).setTone(80);
+c.edit({ hue: 200, chroma: 40, tone: 70 });
+Color.lighten("#744c9d", 10);     // +10 tone
+Color.darken("#744c9d", 10);      // -10 tone
+Color.saturate("#744c9d", 20);    // +20 chroma
+Color.desaturate("#744c9d", 20);  // -20 chroma
+Color.rotateHue("#744c9d", 90);   // +90 hue
 
 // Foreground / background contrast pairing
-onColor("#000000");       // foreground for dark background
-underColor("#ffffff");    // background for light foreground
+Color.onColor("#000000");       // foreground for dark background
+Color.underColor("#ffffff");    // background for light foreground
 
-// Get a specific tone
-tone("#744c9d", 90);  // same hue/chroma, tone 90
-
-// All reference tones at once
-const ts = tones("#744c9d");
+// Tone helpers
+c.atTone(90);         // same hue/chroma, tone 90
+c.tones();            // all 14 reference tones
+Color.tone("#744c9d", 90);  // same hue/chroma, tone 90
+const ts = Color.tones("#744c9d");
 ts[50]; // tone 50 at source color's hue/chroma
+
+// Conversions
+c.toHexColor();       // "#744c9d"
+c.toHex();            // alias of toHexColor
+c.toArgb();           // ARGB integer
+c.toNumber();         // alias of toArgb
+c.toRgb();            // { r: 116, g: 76, b: 157 }
+c.toHct();            // Hct instance
+
+// Extras
+c.contrastWith("#ffffff");
+c.harmonize("#ff0000");
+c.fixDisliked();      // c.isDisliked() check included
 ```
 
 ## Color blending
 
 ```ts
-import { mix } from "@panmdaa/colors";
+import { Color } from "@panmdaa/colors";
 
 // Blend two colors — perceptual midpoint in HCT space
-mix("#ff0000", "#0000ff");  // hue ~283 (purple)
+Color.mix("#ff0000", "#0000ff");  // hue ~283 (purple)
 
 // Blend any number of colors
-mix("#ff0000", "#00ff00", "#0000ff");  // three-way blend
+Color.mix("#ff0000", "#00ff00", "#0000ff");  // three-way blend
 
 // All inputs weighted equally, hue is circular-averaged
-mix("#ff0000", "#ff0000", "#0000ff");
-// ≈ mix("#ff0000", "#0000ff") with extra red weight
+Color.mix("#ff0000", "#ff0000", "#0000ff");
+// ≈ Color.mix("#ff0000", "#0000ff") with extra red weight
 ```
 
-The `mix` function operates in HCT space — hue is circular-averaged (handles the
+`mix` operates in HCT space — hue is circular-averaged (handles the
 0°/360° wrap), chroma and tone are arithmetically averaged. The result is
 perceptually uniform, unlike naive RGB blending.
 
 ## Color correction
 
 ```ts
-import { harmonize, fixDisliked, isDisliked } from "@panmdaa/colors";
+import { Color } from "@panmdaa/colors";
 
 // Harmonize a color to complement another
-harmonize("#ff0000", "#744c9d");  // shifts design color toward source
+Color.harmonize("#ff0000", "#744c9d");  // shifts design color toward source
 
 // Fix disliked colors (yellow-green, etc.)
-isDisliked("#4a7a3f");  // true
-fixDisliked("#4a7a3f"); // shifted to avoid the disliked zone
+Color.isDisliked("#4a7a3f");  // true
+Color.fixDisliked("#4a7a3f"); // shifted to avoid the disliked zone
 ```
 
 ## Advanced: HCT color space
 
 ```ts
-import { hct, fromHct } from "@panmdaa/colors";
+import { Color } from "@panmdaa/colors";
 
-const color = hct("#744c9d");
+const color = Color.hct("#744c9d");
 color.hue;    // 283
 color.chroma; // 36
 color.tone;   // 62
 
 // Create a color from HCT values
-fromHct(283, 36, 80);  // "#c9aae0" (same hue/chroma, tone 80)
+Color.fromHct(283, 36, 80).hex;  // "#c9aae0" (same hue/chroma, tone 80)
 
 // Convert between formats
-toNumber("#744c9d");   // 7629981 (ARGB int)
-fromNumber(7629981);   // "#744c9d"
+Color.toNumber("#744c9d");   // 7629981 (ARGB int)
+Color.fromNumber(7629981);   // "#744c9d"
 ```
 
 ## From images
 
 ```ts
-import { fromImage } from "@panmdaa/colors";
+import { Color } from "@panmdaa/colors";
 
-const seed = await fromImage(imageElement); // extracts dominant color
+const seed = await Color.fromImage(imageElement); // extracts dominant color
 const theme = palette(seed, { variant: "expressive" });
 ```
 
@@ -444,10 +462,6 @@ const theme = palette(seed, { variant: "expressive" });
 | Function | Description |
 |----------|-------------|
 | `palette(color, options?)` | Generate light + dark theme (variant, extraColors, gradients) |
-| `onColor(bg, ratio?)` | Foreground with ≥4.5:1 contrast at same hue/chroma |
-| `underColor(fg, ratio?)` | Background with ≥4.5:1 contrast (inverse of `onColor`) |
-| `mix(...colors)` | Blend N colors together in HCT space |
-| `gradient(from, to, count)` | HCT-interpolated steps between two colors |
 | `generateCSS(theme, options?)` | CSS custom properties string |
 | `generateCSSSheet(theme, options?)` | Full stylesheet with light/dark blocks |
 | `report(theme, mode?)` | WCAG contrast report for all `on-*` pairs |
@@ -455,22 +469,21 @@ const theme = palette(seed, { variant: "expressive" });
 | `paletteChecker(theme/palette, cvd?)` | Check all `on-*` pairs with scores, WCAG flags, and CVD |
 | `simulateCVD(color, deficiency, severity?)` | Simulate color under protanopia/deuteranopia/tritanopia |
 | `simulateAllCVD(color, severity?)` | Simulate color under all three deficiencies at once |
-| `toNumber(color)` | `#rrggbb` → ARGB integer |
-| `fromNumber(color)` | ARGB integer → `#rrggbb` |
-| `hct(color)` | `#rrggbb` → HCT color object |
-| `fromHct(hue, chroma, tone)` | HCT values → `#rrggbb` |
-| `getHue / getChroma / getTone` | Read a single HCT channel |
-| `setHue / setChroma / setTone` | Set a single HCT channel |
-| `lighten / darken` | Adjust tone |
-| `saturate / desaturate` | Adjust chroma |
-| `rotateHue` | Rotate hue |
-| `edit(color, { hue?, chroma?, tone? })` | Batch channel edit |
-| `tone(color, tone)` | Get color at a specific tone |
-| `tones(color)` | All 14 reference tones at once |
-| `harmonize(design, source)` | Shift a color toward a source |
-| `fixDisliked(color)` | Fix disliked hue |
-| `isDisliked(color)` | Check if color is in the disliked zone |
-| `fromImage(image)` | Extract dominant color from an `<img>` |
+| `Color.from(hex/number)` | Parse a hex string or ARGB integer |
+| `Color.fromHex / fromArgb / fromHct / fromNumber / fromImage` | Other constructors |
+| `Color.getHue / getChroma / getTone` | Read a single HCT channel |
+| `Color.setHue / setChroma / setTone` | Set a single HCT channel |
+| `Color.lighten / darken` | Adjust tone |
+| `Color.saturate / desaturate` | Adjust chroma |
+| `Color.rotateHue` | Rotate hue |
+| `Color.edit(color, { hue?, chroma?, tone? })` | Batch channel edit |
+| `Color.tone(color, tone)` | Get color at a specific tone |
+| `Color.tones(color)` | All 14 reference tones at once |
+| `Color.onColor / underColor` | Contrast-guaranteed foreground/background |
+| `Color.mix(...colors)` | Blend N colors together in HCT space |
+| `Color.gradient(from, to, count)` | HCT-interpolated steps between two colors |
+| `Color.harmonize / fixDisliked / isDisliked` | Correction utilities |
+| `Color.toNumber / toArgb / toRgb / toHct` | Conversion methods on an instance |
 
 ## Origins
 

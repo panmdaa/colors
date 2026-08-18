@@ -186,12 +186,12 @@ the ratio: there is no color lighter than T100 and no color darker than T0
 
 ```ts
 export function onColor(bg: ColorValue, ratio = 4.5): ColorValue {
-	const c = hct(bg);
+	const c = Color.hct(bg);
 	const fgTone =
 		c.tone >= 55
 			? Contrast.darkerUnsafe(c.tone, ratio)
 			: Contrast.lighterUnsafe(c.tone, ratio);
-	return fromHct(c.hue, c.chroma, fgTone);
+	return Color.fromHct(c.hue, c.chroma, fgTone).hex;
 }
 ```
 

@@ -172,8 +172,8 @@ choice for a package that is *consumed by bundlers*.
   targets modern runtimes and `engines.node >= 18` (`package.json:36-38`), there
   is nothing to gain from downleveling; the shipped ESM is close to the source.
 - **`lib: ["ESNext", "DOM", "DOM.Iterable"]`** — `DOM` is required because the
-  public API includes `fromImage(image: HTMLImageElement)`
-  (`src/color.ts:31-33`) and `sourceColorFromImage` uses `document.createElement`,
+  public API includes `Color.fromImage(image: HTMLImageElement)`
+  (`src/color-class.ts`) and `sourceColorFromImage` uses `document.createElement`,
   `canvas.getContext`, and `ImageData` (`src/science/image.ts:26-44`). The DOM
   lib types those APIs. `DOM.Iterable` brings the iterable types for DOM
   collections, and `ESNext` covers the newer standard library APIs.
