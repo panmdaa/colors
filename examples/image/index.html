@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Panmdaa Colors — theme from image</title>
+	<style>
+		:root {
+			font-family: system-ui, sans-serif;
+		}
+		body {
+			margin: 0;
+			padding: 2rem;
+		}
+		.card {
+			background: var(--color-surface);
+			color: var(--color-on-surface);
+			border-radius: 12px;
+			padding: 2rem;
+			max-width: 480px;
+			margin: 2rem auto;
+		}
+		.card h1 {
+			color: var(--color-primary);
+		}
+		button {
+			background: var(--color-primary);
+			color: var(--color-on-primary);
+			border: none;
+			border-radius: 8px;
+			padding: 0.6rem 1rem;
+			font-size: 1rem;
+		}
+		label {
+			display: block;
+			margin-bottom: 1rem;
+		}
+	</style>
+</head>
+<body>
+	<main class="card">
+		<h1>Theme generated from an image</h1>
+		<p>
+			Upload an image and we extract its dominant color as the seed to
+			generate a full theme (light + dark) applied as CSS variables.
+		</p>
+		<label>
+			<input type="file" id="picker" accept="image/*" />
+		</label>
+		<div id="preview" style="display: none">
+			<img id="img" alt="preview" style="max-width: 100%; border-radius: 8px" />
+		</div>
+		<div id="meta" style="font-size: 0.85rem"></div>
+		<button id="toggle" hidden>Toggle mode</button>
+	</main>
+	<script type="module" src="./main.js"></script>
+</body>
+</html>
