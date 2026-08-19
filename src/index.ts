@@ -10,6 +10,7 @@
  */
 
 export * from './color';
+export * from './colors';
 export * from './color-class';
 export * from './hct';
 export { Variant as SchemeVariant } from './scheme/variant';
